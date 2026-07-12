@@ -41,29 +41,28 @@ services:
     volumes:
       - storage_data:/storage # same volume as api service
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
 
   schema-sync:
     build:
       context: .
       dockerfile: Dockerfile
+    entrypoint:
+      - /bin/sh
+      - /var/www/html/infrastructure/docker/schema-sync.sh
     working_dir: /var/www/html
     env_file:
       - .env
     environment:
       DB_HOST: mysql
       DB_PORT: 3306
-    command:
-      - php
-      - bin/console
-      - doctrine:migrations:migrate
-      - --no-interaction
-      - --allow-no-migration
     restart: no
     volumes:
       - storage_data:/storage
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
 
   seed:
     build:
@@ -75,6 +74,8 @@ services:
     environment:
       DB_HOST: mysql
       DB_PORT: 3306
+      DOCKER_START_QUEUE_WORKERS: 0
+      DOCKER_START_CRON_DAEMON: 0
     command:
       - php
       - bin/console
@@ -86,8 +87,10 @@ services:
     volumes:
       - storage_data:/storage
     depends_on:
-      - mysql
-      - api
+      mysql:
+        condition: service_healthy
+      api:
+        condition: service_started
 
   v2-video-worker:
     build:
@@ -126,6 +129,8 @@ services:
     environment:
       DB_HOST: mysql
       DB_PORT: 3306
+      DOCKER_START_QUEUE_WORKERS: 0
+      DOCKER_START_CRON_DAEMON: 0
     command:
       - sh
       - -lc
@@ -134,8 +139,10 @@ services:
     volumes:
       - storage_data:/storage
     depends_on:
-      - mysql
-      - api
+      mysql:
+        condition: service_healthy
+      api:
+        condition: service_started
 
   mysql:
     image: mysql:8.4
