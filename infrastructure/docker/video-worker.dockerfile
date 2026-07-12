@@ -19,6 +19,7 @@ ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 ENV PIP_DEFAULT_TIMEOUT=180
 
 COPY workers/ /app/workers/
+COPY shared/worker-contracts/ /app/shared/worker-contracts/
 
 # Download the MediaPipe pose landmarker model once and reuse it across builds.
 RUN --mount=type=cache,target=/var/cache/workeddy/mediapipe,sharing=locked \
