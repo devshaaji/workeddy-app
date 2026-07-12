@@ -1,0 +1,1 @@
+Invoice <?= htmlspecialchars((string) ($invoice_number ?? ''), ENT_QUOTES, 'UTF-8') ?> for <?= htmlspecialchars((string) ($currency ?? 'USD'), ENT_QUOTES, 'UTF-8') ?> <?= htmlspecialchars((string) ($amount ?? ''), ENT_QUOTES, 'UTF-8') ?> is ready.<?php if (!empty($due_date)): ?> Due <?= htmlspecialchars((string) $due_date, ENT_QUOTES, 'UTF-8') ?>.<?php endif; ?>

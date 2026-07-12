@@ -1,0 +1,105 @@
+#assessmentManualWizard {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+  gap: 1.5rem;
+}
+
+#assessmentManualWizard .bs-stepper-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+#assessmentManualWizard .step {
+  position: relative;
+}
+
+#assessmentManualWizard .line {
+  width: 2px;
+  height: 1rem;
+  margin: -0.25rem 0 -0.25rem 1.25rem;
+  background: var(--bs-border-color);
+}
+
+#assessmentManualWizard .step-trigger {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.75rem;
+  background: var(--bs-paper-bg);
+  color: inherit;
+}
+
+#assessmentManualWizard .step.active .step-trigger {
+  border-color: rgba(var(--bs-primary-rgb), 0.35);
+  box-shadow: 0 0 0 1px rgba(var(--bs-primary-rgb), 0.08);
+  background: rgba(var(--bs-primary-rgb), 0.04);
+}
+
+#assessmentManualWizard .step.is-complete .step-trigger {
+  border-color: rgba(var(--bs-success-rgb), 0.35);
+  background: rgba(var(--bs-success-rgb), 0.04);
+}
+
+#assessmentManualWizard .bs-stepper-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 2rem;
+  border-radius: 999px;
+  background: var(--bs-secondary-bg);
+  color: var(--bs-body-color);
+  font-weight: 700;
+}
+
+#assessmentManualWizard .step.active .bs-stepper-circle {
+  background: var(--bs-primary);
+  color: #fff;
+}
+
+#assessmentManualWizard .step.is-complete .bs-stepper-circle {
+  background: var(--bs-success);
+  color: #fff;
+}
+
+#assessmentManualWizard .bs-stepper-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+#assessmentManualWizard .bs-stepper-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+#assessmentManualWizard .bs-stepper-subtitle {
+  color: var(--bs-secondary-color);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+}
+
+#assessmentManualWizard .bs-stepper-content {
+  min-width: 0;
+}
+
+@media (max-width: 991.98px) {
+  #assessmentManualWizard {
+    grid-template-columns: 1fr;
+  }
+
+  #assessmentManualWizard .bs-stepper-header {
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+  }
+
+  #assessmentManualWizard .line {
+    display: none;
+  }
+}

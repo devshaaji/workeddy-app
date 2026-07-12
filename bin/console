@@ -1,0 +1,12 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use WorkEddy\Platform\Console\ConsoleApplicationFactory;
+
+require dirname(__DIR__) . '/bootstrap/autoload.php';
+
+exit(ConsoleApplicationFactory::create(
+    static fn(): \Psr\Container\ContainerInterface => require dirname(__DIR__) . '/bootstrap/app.php',
+)->run());

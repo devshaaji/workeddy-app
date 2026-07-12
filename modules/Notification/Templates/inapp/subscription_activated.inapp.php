@@ -1,0 +1,1 @@
+Subscription activated for <?= htmlspecialchars((string) ($plan_name ?? ''), ENT_QUOTES, 'UTF-8') ?>.<?php if (!empty($expiry_date)): ?> Expires <?= htmlspecialchars((string) $expiry_date, ENT_QUOTES, 'UTF-8') ?>.<?php endif; ?>

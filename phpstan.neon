@@ -1,0 +1,9 @@
+parameters:
+    level: 0
+    paths:
+        - platform
+        - modules
+        - shared
+        - tests
+        - migrations
+    tmpDir: var/phpstan

@@ -1,0 +1,1 @@
+Payment received: <?= htmlspecialchars((string) ($currency ?? 'NGN'), ENT_QUOTES, 'UTF-8') ?> <?= htmlspecialchars((string) ($amount ?? ''), ENT_QUOTES, 'UTF-8') ?>. Ref <?= htmlspecialchars((string) ($reference ?? ''), ENT_QUOTES, 'UTF-8') ?>.

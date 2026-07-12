@@ -1,0 +1,1 @@
+Subscription suspended.<?php if (!empty($plan_name)): ?> Plan <?= htmlspecialchars((string) $plan_name, ENT_QUOTES, 'UTF-8') ?>.<?php endif; ?><?php if (!empty($reason)): ?> Reason: <?= htmlspecialchars((string) $reason, ENT_QUOTES, 'UTF-8') ?>.<?php endif; ?>

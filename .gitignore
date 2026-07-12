@@ -1,0 +1,7 @@
+/vendor/
+/storage/
+/tests/tmp/
+/var/
+/tabler/
+/template/
+.env

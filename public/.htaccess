@@ -1,0 +1,17 @@
+DirectoryIndex index.php
+Options -MultiViews
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Browsers request this automatically; keep it out of the PHP router/logs.
+    RewriteRule ^favicon\.ico$ - [R=204,L]
+
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>

@@ -1,0 +1,22 @@
+{
+  "queue_name": "assessment_video_jobs",
+  "routes": {
+    "next_job": "/internal/assessment-video/jobs/next",
+    "complete": "/internal/assessment-video/jobs/complete",
+    "fail": "/internal/assessment-video/jobs/fail"
+  },
+  "payloads": {
+    "job": {
+      "required": ["job_id", "assessment_uuid", "assessment_video_uuid", "organization_uuid", "storage_file_uuid", "video_path", "model"],
+      "optional": ["face_blur_requested", "multi_person_policy", "processing_profile", "processing_profile_hash", "video_sha256"]
+    },
+    "complete": {
+      "required": ["job_id", "assessment_uuid", "assessment_video_uuid", "organization_uuid", "metrics"],
+      "optional": ["pose_video_path", "thumbnail_path", "faces_blurred", "processing_confidence", "warnings", "timeline", "risky_windows", "processing_profile_hash", "video_sha256"]
+    },
+    "fail": {
+      "required": ["job_id", "assessment_uuid", "assessment_video_uuid", "organization_uuid"],
+      "optional": ["error_message"]
+    }
+  }
+}

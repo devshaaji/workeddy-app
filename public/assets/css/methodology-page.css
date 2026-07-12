@@ -1,0 +1,186 @@
+.methodology-tree-page {
+  padding: 0.5rem 0 4rem;
+}
+
+.methodology-tree-hero {
+  margin: 0 auto 2.5rem;
+  max-width: 760px;
+}
+
+.methodology-tree-title,
+.methodology-tree-content h2 {
+  letter-spacing: -0.02em;
+}
+
+.methodology-tree-shell {
+  align-items: start;
+  display: grid;
+  gap: 2.5rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.methodology-tree-nav {
+  border-left: 1px solid var(--bs-border-color);
+  padding-left: 1rem;
+}
+
+.methodology-tree-branches {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.methodology-tree-branch {
+  align-items: center;
+  color: var(--bs-secondary-color);
+  display: flex;
+  gap: 0.75rem;
+  line-height: 1.4;
+  min-height: 2rem;
+  text-decoration: none;
+}
+
+.methodology-tree-branch:hover,
+.methodology-tree-branch.is-active {
+  color: var(--bs-emphasis-color);
+}
+
+.methodology-tree-node {
+  background: var(--bs-body-bg);
+  border: 2px solid var(--bs-border-color);
+  border-radius: 999px;
+  display: inline-block;
+  flex: 0 0 0.8rem;
+  height: 0.8rem;
+  position: relative;
+  width: 0.8rem;
+}
+
+.methodology-tree-node::after {
+  background: var(--bs-border-color);
+  content: "";
+  height: calc(100% + 0.9rem);
+  left: calc(50% - 1px);
+  position: absolute;
+  top: calc(100% + 0.1rem);
+  width: 2px;
+}
+
+.methodology-tree-branch:last-child .methodology-tree-node::after {
+  display: none;
+}
+
+.methodology-tree-branch.is-passed .methodology-tree-node,
+.methodology-tree-branch.is-active .methodology-tree-node {
+  border-color: var(--bs-primary);
+}
+
+.methodology-tree-branch.is-passed .methodology-tree-node {
+  background: var(--bs-primary);
+}
+
+.methodology-tree-branch.is-passed .methodology-tree-node::after {
+  background: var(--bs-primary);
+}
+
+.methodology-tree-branch.is-active .methodology-tree-node {
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.15);
+}
+
+.methodology-tree-content {
+  margin: 0 auto;
+  max-width: 760px;
+  width: 100%;
+}
+
+.methodology-tree-content p,
+.methodology-tree-list {
+  color: var(--bs-secondary-color);
+  line-height: 1.85;
+}
+
+.methodology-tree-opening p:first-of-type {
+  color: var(--bs-body-color);
+  font-size: 1.08rem;
+}
+
+.methodology-tree-opening,
+.methodology-tree-section,
+.methodology-tree-closing {
+  scroll-margin-top: 6.5rem;
+}
+
+.methodology-tree-section,
+.methodology-tree-closing {
+  border-top: 1px solid var(--bs-border-color);
+  margin-top: 2.75rem;
+  padding-top: 2.75rem;
+}
+
+.methodology-tree-list {
+  margin: 0 0 1.5rem;
+  padding-left: 1.25rem;
+}
+
+.methodology-tree-list li + li {
+  margin-top: 0.55rem;
+}
+
+.methodology-inline-note {
+  background: var(--bs-tertiary-bg);
+  border-radius: 0.75rem;
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+}
+
+.methodology-inline-note p:last-child,
+.methodology-reference-entry p:last-child {
+  margin-bottom: 0;
+}
+
+.methodology-reference-list {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.methodology-reference-entry {
+  border-top: 1px solid var(--bs-border-color);
+  padding-top: 0.9rem;
+}
+
+.methodology-reference-entry:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.methodology-reference-entry a {
+  text-decoration: none;
+}
+
+.methodology-reference-entry a:hover {
+  text-decoration: underline;
+}
+
+.methodology-tree-closing {
+  background: linear-gradient(180deg, rgba(var(--bs-primary-rgb), 0.04), transparent 60%);
+}
+
+@media (min-width: 1100px) {
+  .methodology-tree-shell {
+    grid-template-columns: 240px minmax(0, 760px);
+    justify-content: center;
+  }
+
+  .methodology-tree-nav {
+    position: sticky;
+    top: 8rem;
+  }
+}
+
+@media (max-width: 1099.98px) {
+  .methodology-tree-nav {
+    margin: 0 auto;
+    max-width: 760px;
+    width: 100%;
+  }
+}

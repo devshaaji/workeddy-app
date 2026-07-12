@@ -1,0 +1,12 @@
+vendor/
+.git/
+.env
+storage/cache/
+storage/log/
+storage/*.log
+node_modules/
+.phpunit.cache/
+.codex/
+.agent/
+.playwright-cli/
+tests/

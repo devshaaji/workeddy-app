@@ -1,0 +1,1 @@
+Lead assigned: <?= htmlspecialchars((string) ($lead_name ?? ''), ENT_QUOTES, 'UTF-8') ?><?php if (!empty($company_name)): ?> (<?= htmlspecialchars((string) $company_name, ENT_QUOTES, 'UTF-8') ?>)<?php endif; ?>. Current stage: <?= htmlspecialchars((string) ($stage ?? ''), ENT_QUOTES, 'UTF-8') ?>.

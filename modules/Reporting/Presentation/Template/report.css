@@ -1,0 +1,278 @@
+/* WorkEddy Reporting Module Unified PDF Stylesheet */
+
+body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 12px;
+    color: #374151;
+    line-height: 1.5;
+    padding: 20px;
+}
+
+.header {
+    margin-bottom: 25px;
+    border-bottom: 3px solid #6b7280; /* default fallback border */
+    padding-bottom: 15px;
+}
+
+/* Colors for specific report headers */
+.report-assessment .header { border-bottom-color: #10b981; }
+.report-corrective .header { border-bottom-color: #3b82f6; }
+.report-comparison .header { border-bottom-color: #8b5cf6; }
+.report-audit .header { border-bottom-color: #6b7280; }
+.report-dashboard .header { border-bottom-color: #3b82f6; }
+.report-finance .header { border-bottom-color: #3b82f6; }
+.report-operations .header { border-bottom-color: #3b82f6; }
+
+.logo-placeholder {
+    float: left;
+    font-size: 24px;
+    font-weight: bold;
+    color: #1e3b8b;
+    letter-spacing: -0.5px;
+}
+
+.logo-placeholder span {
+    color: #3b82f6;
+}
+
+.report-assessment .logo-placeholder { color: #047857; }
+.report-assessment .logo-placeholder span { color: #10b981; }
+.report-comparison .logo-placeholder { color: #6d28d9; }
+.report-comparison .logo-placeholder span { color: #8b5cf6; }
+
+.org-details {
+    float: right;
+    text-align: right;
+    font-size: 10px;
+    color: #6b7280;
+}
+
+.clear {
+    clear: both;
+}
+
+.title-block {
+    margin-top: 15px;
+}
+
+.title-block h1 {
+    font-size: 20px;
+    margin: 0;
+    color: #111827;
+    font-weight: 700;
+}
+
+.title-block .meta {
+    font-size: 11px;
+    color: #6b7280;
+    margin-top: 5px;
+}
+
+.section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e3b8b; /* fallback color */
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 25px 0 10px 0;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 5px;
+}
+
+.report-assessment .section-title { color: #065f46; }
+.report-comparison .section-title { color: #6d28d9; }
+.report-audit .section-title { color: #374151; }
+
+.grid {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.grid td {
+    vertical-align: top;
+    padding: 5px 15px 5px 0;
+}
+
+/* Table styling */
+table.data-table,
+table.comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+table.data-table th,
+table.data-table td,
+table.comparison-table th,
+table.comparison-table td {
+    border: 1px solid #e5e7eb;
+    padding: 10px;
+    text-align: left;
+}
+
+table.data-table th,
+table.comparison-table th {
+    background: #f9fafb;
+    font-weight: bold;
+    color: #374151;
+}
+
+table.comparison-table th,
+table.comparison-table td {
+    text-align: center;
+}
+
+table.comparison-table td.left-align {
+    text-align: left;
+}
+
+/* Badges */
+.badge {
+    display: inline-block;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+.badge-high { background-color: #fee2e2; color: #b91c1c; }
+.badge-medium { background-color: #fef3c7; color: #d97706; }
+.badge-low { background-color: #d1fae5; color: #065f46; }
+.badge-completed { background-color: #d1fae5; color: #065f46; }
+.badge-progress { background-color: #fef3c7; color: #d97706; }
+.badge-pending { background-color: #fee2e2; color: #b91c1c; }
+
+/* Dashboard and Finance cards */
+.summary-box {
+    background: #f3f4f6;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.summary-card {
+    float: left;
+    width: 30%;
+    margin-right: 3%;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    padding: 10px;
+    text-align: center;
+    background: #ffffff;
+}
+
+.summary-card.net {
+    margin-right: 0;
+    background: #e0f2fe;
+}
+
+.summary-card h3 {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin: 0 0 5px 0;
+}
+
+.summary-card p {
+    font-size: 16px;
+    font-weight: bold;
+    color: #111827;
+    margin: 0;
+}
+
+/* Comparison specific boxes */
+.reduction-box {
+    background-color: #f3e8ff;
+    border: 1px solid #d8b4fe;
+    border-radius: 6px;
+    padding: 15px;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.reduction-value {
+    font-size: 28px;
+    font-weight: 800;
+    color: #6d28d9;
+}
+
+.reduction-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #5b21b6;
+    text-transform: uppercase;
+}
+
+/* Postural Risk Heat Map */
+.heat-map {
+    background-color: #f3f4f6;
+    border-radius: 6px;
+    padding: 15px;
+    text-align: center;
+}
+
+.heat-map-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #374151;
+}
+
+.body-part-bar {
+    margin-bottom: 8px;
+    text-align: left;
+}
+
+.body-part-label {
+    display: inline-block;
+    width: 100px;
+    font-weight: bold;
+}
+
+.bar-container {
+    display: inline-block;
+    width: 250px;
+    background-color: #e5e7eb;
+    height: 12px;
+    border-radius: 6px;
+    vertical-align: middle;
+}
+
+.bar-fill {
+    height: 12px;
+    border-radius: 6px;
+}
+
+.bar-fill-high { background-color: #ef4444; }
+.bar-fill-medium { background-color: #f59e0b; }
+.bar-fill-low { background-color: #10b981; }
+
+.score-val {
+    display: inline-block;
+    margin-left: 10px;
+    font-weight: bold;
+}
+
+/* Note box */
+.note-box {
+    background-color: #f9fafb;
+    border-left: 4px solid #9ca3af;
+    padding: 12px;
+    margin-top: 15px;
+    font-size: 11px;
+    color: #4b5563;
+}
+
+.note-box strong {
+    color: #374151;
+}
+
+/* Footer */
+.footer {
+    font-size: 9px;
+    color: #9ca3af;
+    text-align: center;
+    margin-top: 40px;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 15px;
+}
