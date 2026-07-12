@@ -14,6 +14,8 @@ final class EmailPayload
         public readonly ?string $toName = null,
         public readonly ?string $fromEmail = null,
         public readonly ?string $fromName = null,
+        public readonly ?string $replyToEmail = null,
+        public readonly ?string $replyToName = null,
         public readonly array $metadata = []
     ) {}
 }

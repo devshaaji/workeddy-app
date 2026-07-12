@@ -10,6 +10,8 @@ final class NotificationSettings extends ModuleSettings
 {
     public const DEFAULT_FROM_EMAIL = 'default_from_email';
     public const DEFAULT_FROM_NAME  = 'default_from_name';
+    public const DEFAULT_REPLY_TO_EMAIL = 'default_reply_to_email';
+    public const DEFAULT_REPLY_TO_NAME = 'default_reply_to_name';
     public const QUEUE_ENABLED      = 'queue_enabled';
     public const FALLBACK_ENABLED   = 'fallback_enabled';
     public const RETRY_MAX_ATTEMPTS = 'retry_max_attempts';
@@ -32,6 +34,16 @@ final class NotificationSettings extends ModuleSettings
     public function defaultFromName(): string
     {
         return $this->getString(self::DEFAULT_FROM_NAME);
+    }
+
+    public function defaultReplyToEmail(): string
+    {
+        return $this->getString(self::DEFAULT_REPLY_TO_EMAIL);
+    }
+
+    public function defaultReplyToName(): string
+    {
+        return $this->getString(self::DEFAULT_REPLY_TO_NAME);
     }
 
     public function queueEnabled(): bool

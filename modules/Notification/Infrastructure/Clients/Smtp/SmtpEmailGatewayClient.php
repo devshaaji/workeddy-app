@@ -9,6 +9,7 @@ use WorkEddy\Modules\Notification\Infrastructure\Clients\EmailGatewayClientInter
 use WorkEddy\Modules\Notification\Infrastructure\Clients\FailureType;
 use WorkEddy\Modules\Notification\Infrastructure\Clients\Payload\EmailPayload;
 use WorkEddy\Modules\Notification\Infrastructure\Clients\ProviderSendResult;
+use WorkEddy\Platform\Clock\IClock;
 use Symfony\Component\Mailer\Mailer;
 use Symfony\Component\Mailer\Transport;
 use Symfony\Component\Mime\Email;
@@ -16,6 +17,8 @@ use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 final class SmtpEmailGatewayClient implements EmailGatewayClientInterface
 {
+    public function __construct(private readonly IClock $clock) {}
+
     public function sendEmail(EmailPayload $payload, ProviderEntry $provider): ProviderSendResult
     {
         $host = $provider->getConfigValue('host', '127.0.0.1');
@@ -48,6 +51,13 @@ final class SmtpEmailGatewayClient implements EmailGatewayClientInterface
                 ->from(sprintf('%s <%s>', $payload->fromName ?? 'BrowseMX', $payload->fromEmail ?? 'noreply@browsemx.local'))
                 ->to($payload->toEmail)
                 ->subject($payload->subject);
+
+            if ($payload->replyToEmail !== null && $payload->replyToEmail !== '') {
+                $replyTo = $payload->replyToName !== null && $payload->replyToName !== ''
+                    ? sprintf('%s <%s>', $payload->replyToName, $payload->replyToEmail)
+                    : $payload->replyToEmail;
+                $email->replyTo($replyTo);
+            }
 
             if ($payload->isHtml) {
                 $email->html($payload->body);

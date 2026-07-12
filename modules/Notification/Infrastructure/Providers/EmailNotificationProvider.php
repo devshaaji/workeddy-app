@@ -37,6 +37,8 @@ final class EmailNotificationProvider implements NotificationProviderInterface
 
             $defaultFromEmail = (string) $this->settings->get('notification.default_from_email', 'noreply@browsemx.local');
             $defaultFromName = (string) $this->settings->get('notification.default_from_name', 'BrowseMX');
+            $defaultReplyToEmail = (string) $this->settings->get('notification.default_reply_to_email', '');
+            $defaultReplyToName = (string) $this->settings->get('notification.default_reply_to_name', '');
 
             $payload = new EmailPayload(
                 toEmail: $message->recipient->email,
@@ -46,6 +48,8 @@ final class EmailNotificationProvider implements NotificationProviderInterface
                 toName: $message->recipient->name,
                 fromEmail: $defaultFromEmail,
                 fromName: $defaultFromName,
+                replyToEmail: $defaultReplyToEmail !== '' ? $defaultReplyToEmail : null,
+                replyToName: $defaultReplyToName !== '' ? $defaultReplyToName : null,
                 metadata: $message->metadata
             );
 

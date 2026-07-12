@@ -18,13 +18,20 @@ final class NotificationSettingsProvider implements IModuleSettingsProvider
     /** @return SettingDefinition[] */
     public function getDefinitions(): array
     {
+        $defaultFromEmail = $this->envString('MAIL_FROM_ADDRESS', 'noreply@browsemx.local');
+        $defaultFromName = $this->envString('MAIL_FROM_NAME', 'BrowseMX');
+        $defaultReplyToEmail = $this->envString('MAIL_REPLY_TO_ADDRESS', '');
+        $defaultReplyToName = $this->envString('MAIL_REPLY_TO_NAME', '');
+        $providerList = $this->defaultProviderList();
+        $activeProviders = $providerList === [] ? [] : ['email' => 'smtp_main'];
+
         return [
             // --- Sender Identity ---
             new SettingDefinition(
                 key: 'default_from_email',
                 module: 'notification',
                 type: SettingType::STRING,
-                default: 'noreply@browsemx.local',
+                default: $defaultFromEmail,
                 label: 'Default From Email',
                 description: 'The email address used as the sender for all outbound notifications.',
                 validation: fn($v) => filter_var($v, FILTER_VALIDATE_EMAIL) !== false
@@ -34,9 +41,27 @@ final class NotificationSettingsProvider implements IModuleSettingsProvider
                 key: 'default_from_name',
                 module: 'notification',
                 type: SettingType::STRING,
-                default: 'BrowseMX',
+                default: $defaultFromName,
                 label: 'Default From Name',
                 description: 'The display name used as the sender for all outbound notifications.',
+            ),
+            new SettingDefinition(
+                key: 'default_reply_to_email',
+                module: 'notification',
+                type: SettingType::STRING,
+                default: $defaultReplyToEmail,
+                label: 'Default Reply-To Email',
+                description: 'Optional reply-to email address used for outbound email notifications.',
+                validation: static fn($v) => $v === '' || filter_var($v, FILTER_VALIDATE_EMAIL) !== false
+                    ? true : 'Must be empty or a valid email address.',
+            ),
+            new SettingDefinition(
+                key: 'default_reply_to_name',
+                module: 'notification',
+                type: SettingType::STRING,
+                default: $defaultReplyToName,
+                label: 'Default Reply-To Name',
+                description: 'Optional display name used for the reply-to address on outbound email notifications.',
             ),
 
             // --- Delivery ---
@@ -96,7 +121,7 @@ final class NotificationSettingsProvider implements IModuleSettingsProvider
                 key: 'provider_list',
                 module: 'notification',
                 type: SettingType::JSON,
-                default: [],
+                default: $providerList,
                 label: 'Provider List',
                 description: 'List of all configured notification providers and their credentials.',
             ),
@@ -104,10 +129,62 @@ final class NotificationSettingsProvider implements IModuleSettingsProvider
                 key: 'active_provider_per_channel',
                 module: 'notification',
                 type: SettingType::JSON,
-                default: [],
+                default: $activeProviders,
                 label: 'Active Providers per Channel',
                 description: 'Mapping of channel names (sms, whatsapp, email) to active provider keys.',
             ),
         ];
+    }
+
+    private function defaultProviderList(): array
+    {
+        if (!$this->envBool('MAIL_ENABLED', false)) {
+            return [];
+        }
+
+        $host = $this->envString('MAIL_HOST', '');
+        $port = $this->envInt('MAIL_PORT', 0);
+        if ($host === '' || $port <= 0) {
+            return [];
+        }
+
+        return [[
+            'key' => 'smtp_main',
+            'provider_type' => 'smtp',
+            'enabled' => true,
+            'channels' => ['email'],
+            'priority' => 1,
+            'config' => array_filter([
+                'host' => $host,
+                'port' => $port,
+                'user' => $this->envString('MAIL_USERNAME', ''),
+                'pass' => $this->envString('MAIL_PASSWORD', ''),
+                'encryption' => $this->envString('MAIL_ENCRYPTION', ''),
+            ], static fn(mixed $value): bool => $value !== ''),
+        ]];
+    }
+
+    private function envString(string $key, string $default): string
+    {
+        $value = $_ENV[$key] ?? getenv($key);
+
+        return is_string($value) && $value !== '' ? $value : $default;
+    }
+
+    private function envInt(string $key, int $default): int
+    {
+        $value = $_ENV[$key] ?? getenv($key);
+
+        return is_numeric($value) ? (int) $value : $default;
+    }
+
+    private function envBool(string $key, bool $default): bool
+    {
+        $value = $_ENV[$key] ?? getenv($key);
+        if ($value === false || $value === null || $value === '') {
+            return $default;
+        }
+
+        return in_array(strtolower((string) $value), ['1', 'true', 'yes', 'on'], true);
     }
 }

@@ -36,7 +36,11 @@ use WorkEddy\Modules\Assessment\Domain\Contracts\IAssessmentRepository;
 use WorkEddy\Modules\Assessment\Domain\Contracts\IValidationReviewRepository;
 use WorkEddy\Modules\Assessment\Infrastructure\AssessmentRepository;
 use WorkEddy\Modules\Assessment\Infrastructure\ValidationReviewRepository;
+use WorkEddy\Modules\Assessment\Presentation\AssessmentController;
+use WorkEddy\Modules\Assessment\Presentation\AssessmentPageController;
+use WorkEddy\Modules\Assessment\Presentation\AssessmentPageData;
 use WorkEddy\Modules\Assessment\Presentation\AssessmentWorkerController;
+use WorkEddy\Modules\Assessment\Presentation\ComparisonPageData;
 use WorkEddy\Modules\Assessment\Settings\AssessmentSettings;
 use WorkEddy\Modules\Assessment\Settings\AssessmentSettingsProvider;
 use WorkEddy\Modules\CorrectiveAction\Domain\Contracts\ICorrectiveActionRepository;
@@ -53,9 +57,11 @@ use WorkEddy\Platform\Authorization\IPermissionDefinitionProvider;
 use WorkEddy\Platform\Clock\IClock;
 use WorkEddy\Platform\Module\ModuleServiceProviderInterface;
 use WorkEddy\Platform\Queue\IQueueService;
+use WorkEddy\Platform\Session\ISessionService;
 use WorkEddy\Platform\Settings\IModuleSettingsProvider;
 use WorkEddy\Platform\Settings\SettingsService;
 use WorkEddy\Platform\Transaction\TransactionManagerInterface;
+use WorkEddy\Shared\Presentation\ViewRenderer;
 
 final class ServiceProvider implements ModuleServiceProviderInterface
 {
@@ -217,6 +223,40 @@ final class ServiceProvider implements ModuleServiceProviderInterface
                 $c->get(AssessmentVideoProcessingProfileResolver::class),
                 $c->get(SubscriptionAssessmentVideoProcessingProfileResolver::class),
                 $c->get(AssessmentSettings::class),
+            ),
+            AssessmentPageData::class => static fn(): AssessmentPageData => new AssessmentPageData(),
+            ComparisonPageData::class => static fn(ContainerInterface $c): ComparisonPageData => new ComparisonPageData(
+                $c->get(GetComparisonReportUseCase::class),
+                $c->get(GetAssessmentUseCase::class),
+                $c->get(ICorrectiveActionRepository::class),
+            ),
+            AssessmentController::class => static fn(ContainerInterface $c): AssessmentController => new AssessmentController(
+                $c->get(CreateManualAssessmentUseCase::class),
+                $c->get(CreateVideoAssessmentForProcessingUseCase::class),
+                $c->get(ListAssessmentsUseCase::class),
+                $c->get(GetAssessmentUseCase::class),
+                $c->get(SubmitAssessmentForReviewUseCase::class),
+                $c->get(AttachAssessmentVideoUseCase::class),
+                $c->get(UploadAssessmentVideoForProcessingUseCase::class),
+                $c->get(ReviewAssessmentUseCase::class),
+                $c->get(SubmitValidationReviewUseCase::class),
+                $c->get(ListValidationReviewsUseCase::class),
+                $c->get(ISessionService::class),
+                $c->get(GenerateComparisonReportUseCase::class),
+                $c->get(GetComparisonReportUseCase::class),
+                $c->get(ListComparisonReportsUseCase::class),
+                $c->get(LockComparisonReportUseCase::class),
+                $c->get(UpdateAssessmentUseCase::class),
+                $c->get(MarkAssessmentBaselineUseCase::class),
+            ),
+            AssessmentPageController::class => static fn(ContainerInterface $c): AssessmentPageController => new AssessmentPageController(
+                $c->get(ViewRenderer::class),
+                $c->get(ISessionService::class),
+                $c->get(IPermissionService::class),
+                $c->get(AssessmentPageData::class),
+                $c->get(ComparisonPageData::class),
+                $c->get(AssessmentSettings::class),
+                $c->get(SubscriptionAssessmentVideoProcessingProfileResolver::class),
             ),
             AssessmentWorkerController::class => static fn(ContainerInterface $c): AssessmentWorkerController => new AssessmentWorkerController(
                 $c->get(ClaimAssessmentVideoJobUseCase::class),

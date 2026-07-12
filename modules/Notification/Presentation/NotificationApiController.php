@@ -141,6 +141,8 @@ final class NotificationApiController
         $allowed = array_flip([
             'default_from_email',
             'default_from_name',
+            'default_reply_to_email',
+            'default_reply_to_name',
             'queue_enabled',
             'http_timeout_seconds',
             'http_connect_timeout_seconds',
