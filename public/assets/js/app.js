@@ -2170,13 +2170,71 @@
       select.addEventListener('change', function () {
         var nextTenantId = select.value;
         select.disabled = true;
+        _showPassiveSystemDialog({
+          title: 'Switching organization',
+          message: '<div class="text-center py-3">' +
+            '<div class="mb-3">' +
+              '<i class="bi bi-arrow-repeat text-primary" style="font-size: 2rem; display: inline-block; animation: weSystemDialogSpin 1s linear infinite;"></i>' +
+            '</div>' +
+            '<p class="mb-0 text-muted">Updating your workspace context. Please wait while we prepare the next organization view.</p>' +
+          '</div>',
+          iconClass: 'd-none',
+          dismissible: false,
+          hideHeader: true
+        }).then(function (dialog) {
         window.App.api.post('/api/v1/iam/profile/tenant', { tenantId: nextTenantId }).then(function (response) {
           select.disabled = false;
           if (!response || !response.ok) {
+            if (dialog) { dialog.hide(); }
             window.App.notify.error(response && response.message ? response.message : 'Unable to switch organization.');
             return;
           }
-          window.location.reload();
+
+          var secondsRemaining = 3;
+          var countdownTimer = null;
+          if (dialog) {
+            dialog.update({
+              title: 'Organization switched',
+              message: '<div class="text-center py-3">' +
+                '<div class="mb-3">' +
+                  '<i class="bi bi-check-circle text-success" style="font-size: 2rem; display: inline-block;"></i>' +
+                '</div>' +
+                '<p class="mb-0 text-muted">Page will reload in <strong>' + secondsRemaining + '</strong> seconds. No action needed.</p>' +
+              '</div>',
+              iconClass: 'd-none',
+              dismissible: false,
+              hideHeader: true
+            });
+          }
+
+          countdownTimer = window.setInterval(function () {
+            secondsRemaining -= 1;
+            if (secondsRemaining <= 0) {
+              window.clearInterval(countdownTimer);
+              window.location.reload();
+              return;
+            }
+
+            if (dialog) {
+              dialog.update({
+                title: 'Organization switched',
+                message: '<div class="text-center py-3">' +
+                  '<div class="mb-3">' +
+                    '<i class="bi bi-check-circle text-success" style="font-size: 2rem; display: inline-block;"></i>' +
+                  '</div>' +
+                  '<p class="mb-0 text-muted">Page will reload in <strong>' + secondsRemaining + '</strong> seconds. No action needed.</p>' +
+                '</div>',
+                iconClass: 'd-none',
+                dismissible: false,
+                hideHeader: true
+              });
+            }
+          }, 1000);
+        })['catch'](function () {
+          select.disabled = false;
+          if (dialog) { dialog.hide(); }
+          window.App.notify.error('Unable to switch organization.');
+        });
         });
       });
     });
@@ -2328,6 +2386,66 @@
         }
 
         dlg.bsModal.show();
+      });
+    });
+  }
+
+  function _showPassiveSystemDialog(options) {
+    options = options || {};
+
+    return new Promise(function (resolve) {
+      _ensureBootstrap(function (bs) {
+        if (!bs) {
+          resolve(null);
+          return;
+        }
+
+        var dlg = _initSystemDialog(bs);
+        if (!dlg) {
+          resolve(null);
+          return;
+        }
+
+        if (!document.getElementById('we-system-dialog-motion')) {
+          var style = document.createElement('style');
+          style.id = 'we-system-dialog-motion';
+          style.textContent = '@keyframes weSystemDialogSpin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}';
+          document.head.appendChild(style);
+        }
+
+        function apply(config) {
+          var title = config.title || 'Notice';
+          var message = config.message || '';
+          var iconClass = config.iconClass || 'bi-info-circle text-primary';
+          var dismissible = config.dismissible !== false;
+
+          if (dlg.titleEl) { dlg.titleEl.textContent = title; }
+          if (dlg.bodyEl) { dlg.bodyEl.innerHTML = message; }
+          if (dlg.iconEl) { dlg.iconEl.className = iconClass.indexOf('bi ') === 0 ? iconClass : 'bi ' + iconClass; }
+          if (dlg.cancelEl) { dlg.cancelEl.classList.add('d-none'); }
+          if (dlg.okEl) { dlg.okEl.classList.add('d-none'); }
+
+          var closeBtn = dlg.modalEl.querySelector('.btn-close');
+          if (closeBtn) { closeBtn.classList.toggle('d-none', !dismissible); }
+
+          var header = dlg.modalEl.querySelector('.modal-header');
+          var footer = dlg.modalEl.querySelector('.modal-footer');
+          if (header) { header.classList.toggle('d-none', config.hideHeader === true); }
+          if (footer) { footer.classList.add('d-none'); }
+
+          dlg.bsModal._config.backdrop = dismissible ? true : 'static';
+          dlg.bsModal._config.keyboard = dismissible;
+        }
+
+        apply(options);
+        dlg.bsModal.show();
+
+        resolve({
+          update: apply,
+          hide: function () {
+            dlg.bsModal.hide();
+          }
+        });
       });
     });
   }

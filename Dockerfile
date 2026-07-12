@@ -1,6 +1,7 @@
 FROM php:8.2-fpm-alpine
 
 RUN apk add --no-cache \
+        dcron \
         unzip \
         git \
     && docker-php-ext-install pdo pdo_mysql
@@ -31,7 +32,9 @@ RUN composer install --no-dev --no-scripts --prefer-dist --optimize-autoloader -
 COPY . .
 
 COPY infrastructure/docker/api-entrypoint.sh /usr/local/bin/api-entrypoint.sh
-RUN chmod +x /usr/local/bin/api-entrypoint.sh
+COPY infrastructure/docker/run-loop.sh /usr/local/bin/run-loop.sh
+COPY infrastructure/docker/write-crontab.sh /usr/local/bin/write-crontab.sh
+RUN chmod +x /usr/local/bin/api-entrypoint.sh /usr/local/bin/run-loop.sh /usr/local/bin/write-crontab.sh
 
 ENTRYPOINT ["/usr/local/bin/api-entrypoint.sh"]
 CMD ["php-fpm", "-F"]

@@ -25,6 +25,21 @@ php cronjobs/subscription-renewal-sweep.php
 php cronjobs/subscription-dunning-sweep.php
 ```
 
+Container startup:
+
+```text
+The main Docker API container can start recurring queue/transport workers automatically:
+- default queue worker loop
+- high_priority queue worker loop
+- crond for daily maintenance wrappers
+
+Control flags:
+DOCKER_START_QUEUE_WORKERS=1
+DOCKER_START_CRON_DAEMON=1
+QUEUE_WORKER_INTERVAL_SECONDS=5
+HIGH_PRIORITY_QUEUE_WORKER_INTERVAL_SECONDS=5
+```
+
 Environment options:
 
 ```text
@@ -66,5 +81,5 @@ Cron examples:
 43 3 * * * cd /path/to/WorkEddy/app && php cronjobs/corrective-action-maintenance.php
 15 2 * * * cd /path/to/WorkEddy/app && php cronjobs/subscription-renewal-sweep.php
 30 2 * * * cd /path/to/WorkEddy/app && php cronjobs/subscription-dunning-sweep.php
-45 3 * * * cd /path/to/WorkEddyWorkEddy&& WorkEddy_RUNTIME_DOCTOR_STRICT=1 php cronjobs/runtime-doctor.php
+45 3 * * * cd /path/to/WorkEddy/app && WorkEddy_RUNTIME_DOCTOR_STRICT=1 php cronjobs/runtime-doctor.php
 ```

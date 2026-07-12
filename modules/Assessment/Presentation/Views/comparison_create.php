@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 $v2Root = dirname(__DIR__, 4);
 $pageTitle = 'Generate Comparison Report';
-$pagePurpose = 'Link locked baseline to reviewed follow-up';
+$pagePurpose = 'Select before and after evidence for improvement proof';
 $pageActions = [
     ['label' => 'Comparison register', 'url' => '/assessments/comparisons', 'class' => 'btn btn-outline-secondary', 'icon' => 'list-ul'],
 ];
@@ -20,25 +20,55 @@ $prefillAction = (string) (($query['correctiveAction'] ?? $query['correctiveActi
 require $v2Root . '/shared/Views/Partials/page_header.php';
 ?>
 
-<div id="comparisonCreatePage" data-prefill-baseline="<?= htmlspecialchars($prefillBaseline, ENT_QUOTES, 'UTF-8') ?>" data-prefill-follow-up="<?= htmlspecialchars($prefillFollowUp, ENT_QUOTES, 'UTF-8') ?>" data-prefill-action="<?= htmlspecialchars($prefillAction, ENT_QUOTES, 'UTF-8') ?>">
+<div id="comparisonCreatePage"
+     data-organization-uuid="<?= htmlspecialchars((string) ($organizationUuid ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+     data-prefill-baseline="<?= htmlspecialchars($prefillBaseline, ENT_QUOTES, 'UTF-8') ?>"
+     data-prefill-follow-up="<?= htmlspecialchars($prefillFollowUp, ENT_QUOTES, 'UTF-8') ?>"
+     data-prefill-action="<?= htmlspecialchars($prefillAction, ENT_QUOTES, 'UTF-8') ?>">
     <div id="comparisonCreateAlert"></div>
     <div class="row g-4">
         <div class="col-xl-5">
             <div class="card mb-4" style="border-radius: var(--we-radius-lg); box-shadow: var(--we-shadow-sm);">
                 <div class="card-header">
                     <h5 class="card-title mb-1">Comparison inputs</h5>
-                    <p class="mb-0 text-muted small">Baseline must be locked and marked. Follow-up must already be reviewed.</p>
+                    <p class="mb-0 text-muted small">Choose the locked baseline, the matching reviewed follow-up, and the linked corrective action when evidence exists.</p>
                 </div>
                 <div class="card-body">
                     <form id="comparisonCreateForm" novalidate>
-                        <div class="mb-3"><label for="baselineAssessmentUuid" class="form-label">Baseline assessment UUID</label><input type="text" class="form-control" id="baselineAssessmentUuid" name="baselineAssessmentUuid" value="<?= htmlspecialchars($prefillBaseline, ENT_QUOTES, 'UTF-8') ?>" required>
+                        <div class="mb-4">
+                            <label for="baselineAssessmentUuid" class="form-label d-inline-flex align-items-center gap-2">
+                                <span>Locked baseline assessment</span>
+                                <button type="button" class="btn btn-sm btn-icon p-0 border-0 bg-transparent text-muted" data-bs-toggle="tooltip" data-bs-placement="top" title="Pick the assessment that was approved, marked as baseline, and locked before the improvement work began." aria-label="Before assessment help">
+                                    <i class="bi bi-info-circle"></i>
+                                </button>
+                            </label>
+                            <select class="form-select" id="baselineAssessmentUuid" name="baselineAssessmentUuid" required>
+                                <option value="">Loading baseline candidates...</option>
+                            </select>
                             <div class="invalid-feedback"></div>
                         </div>
-                        <div class="mb-3"><label for="followUpAssessmentUuid" class="form-label">Follow-up assessment UUID</label><input type="text" class="form-control" id="followUpAssessmentUuid" name="followUpAssessmentUuid" value="<?= htmlspecialchars($prefillFollowUp, ENT_QUOTES, 'UTF-8') ?>" required>
+                        <div class="mb-4">
+                            <label for="followUpAssessmentUuid" class="form-label d-inline-flex align-items-center gap-2">
+                                <span>Reviewed follow-up assessment</span>
+                                <button type="button" class="btn btn-sm btn-icon p-0 border-0 bg-transparent text-muted" data-bs-toggle="tooltip" data-bs-placement="top" title="Choose the reviewed or locked follow-up assessment that shows the result after the change and uses the same scoring model." aria-label="After assessment help">
+                                    <i class="bi bi-info-circle"></i>
+                                </button>
+                            </label>
+                            <select class="form-select" id="followUpAssessmentUuid" name="followUpAssessmentUuid" required>
+                                <option value="">Loading follow-up candidates...</option>
+                            </select>
                             <div class="invalid-feedback"></div>
                         </div>
-                        <div class="mb-4"><label for="correctiveActionUuid" class="form-label">Corrective action UUID</label><input type="text" class="form-control" id="correctiveActionUuid" name="correctiveActionUuid" value="<?= htmlspecialchars($prefillAction, ENT_QUOTES, 'UTF-8') ?>">
-                            <div class="form-text">Optional. Include action workflow evidence when relevant.</div>
+                        <div class="mb-4">
+                            <label for="correctiveActionUuid" class="form-label d-inline-flex align-items-center gap-2">
+                                <span>Linked corrective action</span>
+                                <button type="button" class="btn btn-sm btn-icon p-0 border-0 bg-transparent text-muted" data-bs-toggle="tooltip" data-bs-placement="top" title="Optional. Link the action record when you want the report to carry improvement workflow evidence." aria-label="Linked corrective action help">
+                                    <i class="bi bi-info-circle"></i>
+                                </button>
+                            </label>
+                            <select class="form-select" id="correctiveActionUuid" name="correctiveActionUuid">
+                                <option value="">No linked corrective action</option>
+                            </select>
                         </div>
                         <div class="d-flex flex-wrap gap-2">
                             <button type="submit" class="btn btn-primary" id="generateComparisonBtn"><i class="bi bi-intersect me-1"></i>Generate Report</button>
@@ -49,15 +79,12 @@ require $v2Root . '/shared/Views/Partials/page_header.php';
             </div>
             <div class="card" style="border-radius: var(--we-radius-lg); box-shadow: var(--we-shadow-sm);">
                 <div class="card-header">
-                    <h5 class="card-title mb-1">Proof rules</h5>
+                    <h5 class="card-title mb-1">Readiness checklist</h5>
                 </div>
                 <div class="card-body">
-                    <ul class="list-unstyled mb-0">
-                        <li class="d-flex gap-2 mb-3"><i class="bi bi-check-circle text-success"></i><span>Same org and same scoring model only.</span></li>
-                        <li class="d-flex gap-2 mb-3"><i class="bi bi-check-circle text-success"></i><span>Uses reviewed final scores, not raw draft input.</span></li>
-                        <li class="d-flex gap-2 mb-3"><i class="bi bi-check-circle text-success"></i><span>Body-region delta shows improvement, worsening, unchanged.</span></li>
-                        <li class="d-flex gap-2"><i class="bi bi-check-circle text-success"></i><span>Risk reduction is estimated evidence, not guaranteed outcome.</span></li>
-                    </ul>
+                    <div id="comparisonEligibilityPanel" class="small text-muted">
+                        Select a before and after assessment to validate comparison readiness.
+                    </div>
                 </div>
             </div>
         </div>
