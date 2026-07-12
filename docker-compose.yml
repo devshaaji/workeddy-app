@@ -89,7 +89,7 @@ services:
       - mysql
       - api
 
-  video-worker:
+  v2-video-worker:
     build:
       context: .
       dockerfile: infrastructure/docker/video-worker.dockerfile

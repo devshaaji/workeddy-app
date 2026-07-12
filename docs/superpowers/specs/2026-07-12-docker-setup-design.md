@@ -18,8 +18,8 @@ graph TD
     schema-sync[schema-sync CLI container] -->|Run migrations| mysql
     seed[seed CLI container] -->|Seed DB| mysql
     
-    video-worker[video-worker Container] -->|Fetches jobs| nginx
-    video-worker -->|Reads/Writes videos| storage[(shared storage volume)]
+    v2-video-worker[v2-video-worker Container] -->|Fetches jobs| nginx
+    v2-video-worker -->|Reads/Writes videos| storage[(shared storage volume)]
     api -->|Writes source videos| storage
     
     video-retention[video-retention CLI container] -->|Cleans up files| storage
@@ -31,7 +31,7 @@ graph TD
 - **api**: Runs the core WorkEddy PHP-FPM runtime. Integrates automatic migrations via its entrypoint, and mounts the live workspace code with caching mechanisms.
 - **schema-sync**: A transient container running `php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration` to verify migrations.
 - **seed**: Runs the `php bin/console db:seed --no-interaction` command under the `ops` profile.
-- **video-worker**: Python container compiling MediaPipe dependencies. Pulls jobs from the PHP control plane via `http://nginx` and processes video overlays in the shared volume.
+- **v2-video-worker**: Python container compiling MediaPipe dependencies. Pulls jobs from the PHP control plane via `http://nginx` and processes video overlays in the shared volume.
 - **video-retention**: Background cron loop running `php bin/console privacy:video-retention:enforce` periodically.
 - **mysql**: Standard MySQL 8.4 database, mapping port 3307 on the host.
 
