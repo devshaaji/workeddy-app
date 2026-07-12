@@ -3,8 +3,12 @@ services:
     build:
       context: .
       dockerfile: infrastructure/docker/nginx.dockerfile
+    networks:
+      - default
+      - traefik-proxy
     labels:
       - traefik.enable=true
+      - traefik.docker.network=traefik-proxy
       - traefik.http.routers.workeddy.rule=Host(`workeddy.com`) || Host(`www.workeddy.com`)
       - traefik.http.routers.workeddy.entrypoints=websecure
       - traefik.http.routers.workeddy.tls.certresolver=letsencrypt
@@ -194,3 +198,7 @@ volumes:
   mysql_data:
   vendor_data:
   storage_data:
+
+networks:
+  traefik-proxy:
+    external: true
