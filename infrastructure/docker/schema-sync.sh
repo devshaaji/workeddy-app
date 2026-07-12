@@ -20,8 +20,8 @@ attempt=1
 ensure_dependencies
 
 while [ "$attempt" -le "$MAX_RETRIES" ]; do
-  if php "${APP_ROOT}/bin/console" doctrine:migrations:sync-metadata-storage >/dev/null 2>&1 \
-    && php "${APP_ROOT}/bin/console" doctrine:migrations:migrate --no-interaction --allow-no-migration; then
+  if php "${APP_ROOT}/bin/console" migrations:sync-metadata-storage >/dev/null 2>&1 \
+    && php "${APP_ROOT}/bin/console" migrations:migrate --no-interaction --allow-no-migration; then
     log "database migrations are up to date"
     exit 0
   fi

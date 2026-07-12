@@ -85,8 +85,8 @@ handle_signal() {
 wait_for_db_and_migrate() {
   attempt=1
   while [ "$attempt" -le "$MAX_RETRIES" ]; do
-    if php /var/www/html/bin/console doctrine:migrations:sync-metadata-storage >/dev/null 2>&1 \
-      && php /var/www/html/bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration; then
+    if php /var/www/html/bin/console migrations:sync-metadata-storage >/dev/null 2>&1 \
+      && php /var/www/html/bin/console migrations:migrate --no-interaction --allow-no-migration; then
       log "database migrations are up to date"
       return 0
     fi

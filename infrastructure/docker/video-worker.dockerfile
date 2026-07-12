@@ -4,12 +4,12 @@ FROM python:3.11-slim
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && apt-get install -y --no-install-recommends \
-        ffmpeg \
-        libgl1 \
-        libglib2.0-0 \
+    ffmpeg \
+    libgl1 \
+    libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
+WORKDIR /
 
 COPY workers/requirements.txt /app/requirements.txt
 RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \
@@ -18,13 +18,13 @@ RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 ENV PIP_DEFAULT_TIMEOUT=180
 
-COPY workers/ /app/workers/
-COPY shared/worker-contracts/ /app/shared/worker-contracts/
+COPY workers/ /workers/
+COPY shared/worker-contracts/ /shared/worker-contracts/
 
 # Download the MediaPipe pose landmarker model once and reuse it across builds.
 RUN --mount=type=cache,target=/var/cache/workeddy/mediapipe,sharing=locked \
     mkdir -p /opt/mediapipe /var/cache/workeddy/mediapipe \
- && python - <<'PY'
+    && python - <<'PY'
 from pathlib import Path
 import shutil
 import urllib.request
@@ -45,4 +45,4 @@ PY
 
 ENV PYTHONUNBUFFERED=1
 
-CMD ["python", "/app/workers/queue-listener/worker_runner.py"]
+CMD ["python", "/workers/queue-listener/worker_runner.py"]

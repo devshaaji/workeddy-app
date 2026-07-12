@@ -265,7 +265,7 @@ final class PlatformServiceProvider implements ModuleServiceProviderInterface
             QueueWorker::class => static fn(ContainerInterface $c): QueueWorker => new QueueWorker(
                 $c->get(IQueueService::class),
                 $c->get(QueueHandlerRegistry::class),
-                $c->get(ILoggerFactory::class),
+                $c->get(ILoggerFactory::class)->channel('queue'),
             ),
             FastRouteDispatcherFactory::class => static fn(): FastRouteDispatcherFactory => new FastRouteDispatcherFactory(),
             PhpDiContainerFactory::class => static fn(): PhpDiContainerFactory => new PhpDiContainerFactory(),

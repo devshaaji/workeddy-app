@@ -18,7 +18,8 @@ final class Version20260710060000_AddTaskAssessmentModel extends AbstractMigrati
     {
         unset($schema);
 
-        $this->addSql("ALTER TABLE tasks ADD assessment_model VARCHAR(40) NOT NULL DEFAULT 'reba' AFTER name");
+        $this->addSql("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS assessment_model VARCHAR(40) NOT NULL DEFAULT 'reba' AFTER name");
+
         $this->addSql("UPDATE tasks SET assessment_model = 'reba' WHERE assessment_model IS NULL OR assessment_model = ''");
     }
 
@@ -26,6 +27,6 @@ final class Version20260710060000_AddTaskAssessmentModel extends AbstractMigrati
     {
         unset($schema);
 
-        $this->addSql('ALTER TABLE tasks DROP COLUMN assessment_model');
+        $this->addSql('ALTER TABLE tasks DROP COLUMN IF EXISTS assessment_model');
     }
 }
