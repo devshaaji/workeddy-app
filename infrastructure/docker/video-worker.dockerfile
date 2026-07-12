@@ -11,15 +11,14 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 
 WORKDIR /app
 
-COPY v2/workers/requirements.txt /app/requirements.txt
+COPY workers/requirements.txt /app/requirements.txt
 RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \
     pip install --prefer-binary --retries 10 --timeout 180 -r /app/requirements.txt
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 ENV PIP_DEFAULT_TIMEOUT=180
 
-COPY v2/workers/ /app/workers/
-COPY v2/shared/  /app/shared/
+COPY workers/ /app/workers/
 
 # Download the MediaPipe pose landmarker model once and reuse it across builds.
 RUN --mount=type=cache,target=/var/cache/workeddy/mediapipe,sharing=locked \

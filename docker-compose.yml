@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   nginx:
     image: nginx:1.27-alpine
@@ -35,6 +33,11 @@ services:
       - -F
     env_file:
       - .env
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      WORKER_API_BASE_URL: http://nginx
+      WorkEddy_VIDEO_WORKER_STORAGE_ROOT: /storage
     restart: unless-stopped
     volumes:
       - .:/var/www/html # live-reload project code
@@ -45,9 +48,15 @@ services:
 
   schema-sync:
     image: workeddy-app
+    build:
+      context: .
+      dockerfile: Dockerfile
     working_dir: /var/www/html
     env_file:
       - .env
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
     command:
       - php
       - bin/console
@@ -64,9 +73,15 @@ services:
 
   seed:
     image: workeddy-app
+    build:
+      context: .
+      dockerfile: Dockerfile
     working_dir: /var/www/html
     env_file:
       - .env
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
     command:
       - php
       - bin/console
@@ -89,6 +104,11 @@ services:
       dockerfile: infrastructure/docker/video-worker.dockerfile
     env_file:
       - .env
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      WORKER_API_BASE_URL: http://nginx
+      WorkEddy_VIDEO_WORKER_STORAGE_ROOT: /storage
     healthcheck:
       test:
         - CMD
@@ -102,17 +122,21 @@ services:
     restart: unless-stopped
     volumes:
       - ./workers:/app/workers
-      - ./shared:/app/shared:ro
-      - ./ml:/app/ml
       - storage_data:/storage
     depends_on:
       - nginx
 
   video-retention:
     image: workeddy-app
+    build:
+      context: .
+      dockerfile: Dockerfile
     working_dir: /var/www/html
     env_file:
       - .env
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
     command:
       - sh
       - -lc
@@ -131,8 +155,8 @@ services:
     environment:
       MYSQL_DATABASE: ${DB_NAME:-workeddy}
       MYSQL_USER: ${DB_USER:-workeddy}
-      MYSQL_PASSWORD: ${DB_PASS:-workeddy}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS:-rootsecret}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-workeddy}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootsecret}
     healthcheck:
       test:
         - CMD-SHELL
