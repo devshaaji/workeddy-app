@@ -234,12 +234,14 @@ final class ServiceProvider implements ModuleServiceProviderInterface
                 $c->get(ISubscriptionRepository::class),
                 $c->get(ISubscriptionPlanRepository::class),
                 $c->get(SubscriptionSettings::class),
+                $c->get(ISubscriptionUsageRepository::class),
             ),
             SubscriptionPageController::class => static fn(ContainerInterface $c): SubscriptionPageController => new SubscriptionPageController(
                 $c->get(ISessionService::class),
                 $c->get(IPermissionService::class),
                 $c->get(ViewRenderer::class),
                 $c->get(SubscriptionPageData::class),
+                $c->get(ISubscriptionRepository::class),
             ),
             SubscriptionApiController::class => static fn(ContainerInterface $c): SubscriptionApiController => new SubscriptionApiController(
                 $c->get(ISubscriptionRepository::class),

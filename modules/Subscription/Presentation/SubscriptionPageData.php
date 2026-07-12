@@ -6,6 +6,7 @@ namespace WorkEddy\Modules\Subscription\Presentation;
 
 use WorkEddy\Modules\Subscription\Domain\Contracts\ISubscriptionPlanRepository;
 use WorkEddy\Modules\Subscription\Domain\Contracts\ISubscriptionRepository;
+use WorkEddy\Modules\Subscription\Domain\Contracts\ISubscriptionUsageRepository;
 use WorkEddy\Modules\Subscription\Settings\SubscriptionSettings;
 use WorkEddy\Platform\Session\UserContext;
 use WorkEddy\Shared\Exceptions\NotFoundException;
@@ -16,6 +17,7 @@ final class SubscriptionPageData
         private readonly ISubscriptionRepository $repository,
         private readonly ISubscriptionPlanRepository $plans,
         private readonly SubscriptionSettings $settings,
+        private readonly ISubscriptionUsageRepository $usage,
     ) {}
 
     /**
@@ -49,10 +51,12 @@ final class SubscriptionPageData
         }
 
         $plan = $this->plans->findByCode($subscription->planCode);
+        $usage = $this->usage->getCurrentPeriodUsage($subscription->uuid, new \DateTimeImmutable());
 
         return [
             'subscription' => $subscription->toArray(),
             'plan' => $plan?->toArray(),
+            'usage' => $usage->toArray(),
         ];
     }
 

@@ -6,6 +6,7 @@ namespace WorkEddy\Modules\Subscription\Presentation;
 
 use WorkEddy\Modules\IAM\Domain\Contracts\IPermissionService;
 use WorkEddy\Modules\Subscription\Authorization\SubscriptionPermissions;
+use WorkEddy\Modules\Subscription\Domain\Contracts\ISubscriptionRepository;
 use WorkEddy\Platform\Http\Request;
 use WorkEddy\Platform\Http\Response;
 use WorkEddy\Platform\Session\ISessionService;
@@ -19,12 +20,20 @@ final class SubscriptionPageController
         private readonly IPermissionService $permissions,
         private readonly ViewRenderer $views,
         private readonly SubscriptionPageData $pageData,
+        private readonly ISubscriptionRepository $repository,
     ) {}
 
     public function index(Request $request): Response
     {
         $ctx = $this->requireContext();
         $this->permissions->requirePrivilege($ctx, SubscriptionPermissions::VIEW);
+
+        if ($ctx->organizationId !== null && !$ctx->hasPermission(SubscriptionPermissions::MANAGE_PLANS)) {
+            $subscription = $this->repository->findByOrganizationId($ctx->organizationId);
+            if ($subscription !== null) {
+                return Response::redirect('/subscriptions/' . $subscription->uuid);
+            }
+        }
 
         return $this->views->render(
             'modules/Subscription/Presentation/Views/Index/index.php',
