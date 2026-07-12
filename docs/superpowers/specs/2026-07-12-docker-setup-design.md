@@ -14,7 +14,6 @@ This document specifies the container and environment configurations required to
 graph TD
     nginx[nginx Container:80] -->|Proxies PHP| api[api Container:9000]
     api -->|DB Connection| mysql[mysql Container:3306]
-    api -->|Queue / Cache| redis[redis Container:6379]
     
     schema-sync[schema-sync CLI container] -->|Run migrations| mysql
     seed[seed CLI container] -->|Seed DB| mysql
@@ -35,7 +34,6 @@ graph TD
 - **video-worker**: Python container compiling MediaPipe dependencies. Pulls jobs from the PHP control plane via `http://nginx` and processes video overlays in the shared volume.
 - **video-retention**: Background cron loop running `php bin/console privacy:video-retention:enforce` periodically.
 - **mysql**: Standard MySQL 8.4 database, mapping port 3307 on the host.
-- **redis**: Alpine Redis container (no custom conf volume required for local development).
 
 ## Environment Variables Configuration (`.env.example.docker`)
 The `.env.example.docker` file contains pre-configured docker-network hostnames:

@@ -42,7 +42,6 @@ services:
       - storage_data:/storage # same volume as api service
     depends_on:
       - mysql
-      - redis
 
   schema-sync:
     image: workeddy-app
@@ -62,7 +61,6 @@ services:
       - storage_data:/storage
     depends_on:
       - mysql
-      - redis
 
   seed:
     image: workeddy-app
@@ -148,26 +146,7 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
 
-  redis:
-    image: redis:7-alpine
-    command:
-      - redis-server
-    healthcheck:
-      test:
-        - CMD
-        - redis-cli
-        - ping
-      interval: 10s
-      timeout: 3s
-      retries: 10
-      start_period: 10s
-    ports:
-      - 6380:6379
-    volumes:
-      - redis_data:/data
-
 volumes:
   mysql_data:
-  redis_data:
   vendor_data:
   storage_data:

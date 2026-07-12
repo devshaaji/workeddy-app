@@ -10,7 +10,7 @@
 
 ## Global Constraints
 
-- Services must match existing container structures (e.g. mysql:8.4, redis:7-alpine, nginx:1.27-alpine).
+- Services must match existing container structures (e.g. mysql:8.4, nginx:1.27-alpine).
 - Database migrations and seeders must use v2 Symfony CLI commands: `php bin/console doctrine:migrations:migrate` and `php bin/console db:seed`.
 - Video worker container must depend on Nginx.
 - Command validation must run via `docker compose config` before completion.
