@@ -53,6 +53,7 @@ services:
 
   schema-sync:
     image: workeddy-app
+    entrypoint: []
     working_dir: /var/www/html
     env_file:
       - .env
@@ -77,6 +78,7 @@ services:
 
   seed:
     image: workeddy-app
+    entrypoint: []
     build:
       context: .
       dockerfile: Dockerfile
@@ -140,6 +142,7 @@ services:
 
   video-retention:
     image: workeddy-app
+    entrypoint: []
     build:
       context: .
       dockerfile: Dockerfile
