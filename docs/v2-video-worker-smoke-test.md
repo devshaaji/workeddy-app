@@ -1,20 +1,20 @@
 # V2 Video Worker Smoke Test
 
-Use this after the API, database, Redis, and `v2-video-worker` service are running locally.
+Use this after the API, database, and `video-worker` service are running locally.
 
 ## Preconditions
 
-- `WORKER_API_TOKEN` is set in `.env` and `infrastructure/docker/compose.env`.
+- `WORKER_API_TOKEN` is set in `.env`.
 - `docker compose config --quiet` passes.
 - V2 schema sync has applied `platform_jobs`, `assessments`, `assessment_videos`, `assessment_video_processing_results`, `uploads`, and Privacy tables.
-- API and `v2-video-worker` share the same storage volume at the v2 Storage root and `/storage`.
+- API and `video-worker` share the same storage volume at the v2 Storage root and `/storage`.
 - At least one Assessment video is uploaded through `POST /api/v1/assessments/{assessmentUuid}/videos/upload-and-process`.
 
 ## Commands
 
 ```bash
-docker compose up -d api nginx mysql redis schema-sync v2-video-worker
-docker compose logs -f v2-video-worker
+docker compose up -d api nginx mysql schema-sync video-worker
+docker compose logs -f video-worker
 ```
 
 Expected worker behavior:
@@ -30,7 +30,7 @@ Expected worker behavior:
 ## Quick Failure Check
 
 ```bash
-docker compose exec v2-video-worker python /app/workers/shared/container_healthcheck.py video-worker
+docker compose exec video-worker python /app/workers/shared/container_healthcheck.py video-worker
 ```
 
 If jobs fail, check:
