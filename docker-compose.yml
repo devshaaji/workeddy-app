@@ -32,6 +32,7 @@ services:
       - -F
     env_file:
       - .env
+      - ./infrastructure/docker/compose.env
     environment:
       DB_HOST: mysql
       DB_PORT: 3306
@@ -54,6 +55,7 @@ services:
     working_dir: /var/www/html
     env_file:
       - .env
+      - ./infrastructure/docker/compose.env
     environment:
       DB_HOST: mysql
       DB_PORT: 3306
@@ -71,6 +73,7 @@ services:
     working_dir: /var/www/html
     env_file:
       - .env
+      - ./infrastructure/docker/compose.env
     environment:
       DB_HOST: mysql
       DB_PORT: 3306
@@ -98,6 +101,7 @@ services:
       dockerfile: infrastructure/docker/video-worker.dockerfile
     env_file:
       - .env
+      - ./infrastructure/docker/compose.env
     environment:
       DB_HOST: mysql
       DB_PORT: 3306
@@ -126,6 +130,7 @@ services:
     working_dir: /var/www/html
     env_file:
       - .env
+      - ./infrastructure/docker/compose.env
     environment:
       DB_HOST: mysql
       DB_PORT: 3306
@@ -146,11 +151,10 @@ services:
 
   mysql:
     image: mysql:8.4
+    env_file:
+      - ./infrastructure/docker/compose.env
     environment:
-      MYSQL_DATABASE: ${DB_NAME:-workeddy}
-      MYSQL_USER: ${DB_USER:-workeddy}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-workeddy}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootsecret}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS:-rootsecret}
     healthcheck:
       test:
         - CMD-SHELL
