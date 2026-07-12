@@ -36,6 +36,7 @@ $renderProgress = function (string $title, string $metricKey, int $used, ?int $l
     $limitLabel = 'Unlimited';
     $badgeClass = 'bg-label-success';
     $progressBarClass = 'bg-success';
+    $helperText = 'Unlimited entitlement';
 
     if ($limit !== null && $limit > 0) {
         $pct = (int) round(($used / $limit) * 100);
@@ -48,7 +49,7 @@ $renderProgress = function (string $title, string $metricKey, int $used, ?int $l
             $progressBarClass = 'bg-warning';
         }
     } else {
-        $pct = 100;
+        $pct = 0;
         $progressBarClass = 'bg-info';
         $badgeClass = 'bg-label-info';
     }
@@ -57,6 +58,10 @@ $renderProgress = function (string $title, string $metricKey, int $used, ?int $l
     $escapedLimitLabel = htmlspecialchars($limitLabel, ENT_QUOTES, 'UTF-8');
     $escapedUsed = htmlspecialchars((string) $used, ENT_QUOTES, 'UTF-8') . $unit;
     $escapedPct = min(100, $pct);
+    if ($limit !== null && $limit > 0) {
+        $helperText = "{$escapedPct}% of entitlement consumed";
+    }
+    $escapedHelperText = htmlspecialchars($helperText, ENT_QUOTES, 'UTF-8');
 
     echo <<<HTML
     <div class="col-md-6 col-lg-4 mb-4 quota-progress" data-metric="{$metricKey}">
@@ -69,11 +74,20 @@ $renderProgress = function (string $title, string $metricKey, int $used, ?int $l
                 <div class="progress mb-1" style="height: 8px;">
                     <div class="progress-bar {$progressBarClass}" role="progressbar" style="width: {$escapedPct}%" aria-valuenow="{$escapedPct}" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
-                <small class="text-muted">{$escapedPct}% of entitlement consumed</small>
+                <small class="text-muted">{$escapedHelperText}</small>
             </div>
         </div>
     </div>
 HTML;
+};
+
+$formatPlanLimit = static function (array $features, string $key, string $suffix = ''): string {
+    $value = $features[$key] ?? null;
+    if ($value === null || $value === '') {
+        return 'Unlimited';
+    }
+
+    return (string) ((int) $value) . $suffix;
 };
 ?>
 
@@ -175,60 +189,37 @@ HTML;
                 </div>
 
                 <div class="row g-4">
-                    <!-- Starter Plan Card -->
-                    <div class="col-md-4">
-                        <div class="card border rounded p-3 text-center">
-                            <h5 class="mb-1">Starter</h5>
-                            <h2 class="text-primary mb-2">$0.00</h2>
-                            <p class="text-muted small">For small teams getting started.</p>
-                            <hr>
-                            <ul class="list-unstyled text-start small mb-4">
-                                <li><i class="bi bi-check text-success me-2"></i> 3 Team Members</li>
-                                <li><i class="bi bi-check text-success me-2"></i> 5 Worksites</li>
-                                <li><i class="bi bi-check text-success me-2"></i> 50 Assessments/mo</li>
-                            </ul>
-                            <button class="btn btn-outline-primary w-100 btn-select-plan" data-plan="starter" <?= ($subscription['plan_code'] ?? '') === 'starter' ? 'disabled' : '' ?>>
-                                <?= ($subscription['plan_code'] ?? '') === 'starter' ? 'Current Plan' : 'Select Plan' ?>
-                            </button>
+                    <?php foreach (($plans ?? []) as $availablePlan): ?>
+                        <?php
+                        $planCode = (string) ($availablePlan['code'] ?? '');
+                        $isCurrentPlan = $planCode === (string) ($subscription['plan_code'] ?? '');
+                        $isFeaturedPlan = $planCode === 'professional';
+                        $cardClass = $isFeaturedPlan
+                            ? 'card border border-primary rounded p-3 text-center position-relative'
+                            : 'card border rounded p-3 text-center';
+                        $buttonClass = $isFeaturedPlan ? 'btn btn-primary w-100 btn-select-plan' : 'btn btn-outline-primary w-100 btn-select-plan';
+                        $features = is_array($availablePlan['features'] ?? null) ? $availablePlan['features'] : [];
+                        ?>
+                        <div class="col-md-4">
+                            <div class="<?= htmlspecialchars($cardClass, ENT_QUOTES, 'UTF-8') ?>">
+                                <?php if ($isFeaturedPlan): ?>
+                                    <span class="badge bg-primary position-absolute top-0 start-50 translate-middle">POPULAR</span>
+                                <?php endif; ?>
+                                <h5 class="mb-1"><?= htmlspecialchars((string) ($availablePlan['name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></h5>
+                                <h2 class="text-primary mb-2">$<?= htmlspecialchars(number_format((float) ($availablePlan['price'] ?? 0), 2), ENT_QUOTES, 'UTF-8') ?></h2>
+                                <p class="text-muted small"><?= htmlspecialchars((string) ($availablePlan['description'] ?? ''), ENT_QUOTES, 'UTF-8') ?></p>
+                                <hr>
+                                <ul class="list-unstyled text-start small mb-4">
+                                    <li><i class="bi bi-check text-success me-2"></i> <?= htmlspecialchars($formatPlanLimit($features, 'max_users') . ' Team Members', ENT_QUOTES, 'UTF-8') ?></li>
+                                    <li><i class="bi bi-check text-success me-2"></i> <?= htmlspecialchars($formatPlanLimit($features, 'max_worksites') . ' Worksites', ENT_QUOTES, 'UTF-8') ?></li>
+                                    <li><i class="bi bi-check text-success me-2"></i> <?= htmlspecialchars($formatPlanLimit($features, 'max_assessments_per_month') . ' Assessments/mo', ENT_QUOTES, 'UTF-8') ?></li>
+                                </ul>
+                                <button class="<?= htmlspecialchars($buttonClass, ENT_QUOTES, 'UTF-8') ?>" data-plan="<?= htmlspecialchars($planCode, ENT_QUOTES, 'UTF-8') ?>" <?= $isCurrentPlan ? 'disabled' : '' ?>>
+                                    <?= $isCurrentPlan ? 'Current Plan' : 'Select Plan' ?>
+                                </button>
+                            </div>
                         </div>
-                    </div>
-
-                    <!-- Professional Plan Card -->
-                    <div class="col-md-4">
-                        <div class="card border border-primary rounded p-3 text-center position-relative">
-                            <span class="badge bg-primary position-absolute top-0 start-50 translate-middle">POPULAR</span>
-                            <h5 class="mb-1">Professional</h5>
-                            <h2 class="text-primary mb-2">$299.00</h2>
-                            <p class="text-muted small">For growing safety teams.</p>
-                            <hr>
-                            <ul class="list-unstyled text-start small mb-4">
-                                <li><i class="bi bi-check text-success me-2"></i> 50 Team Members</li>
-                                <li><i class="bi bi-check text-success me-2"></i> 50 Worksites</li>
-                                <li><i class="bi bi-check text-success me-2"></i> 500 Assessments/mo</li>
-                            </ul>
-                            <button class="btn btn-primary w-100 btn-select-plan" data-plan="professional" <?= ($subscription['plan_code'] ?? '') === 'professional' ? 'disabled' : '' ?>>
-                                <?= ($subscription['plan_code'] ?? '') === 'professional' ? 'Current Plan' : 'Select Plan' ?>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Enterprise Plan Card -->
-                    <div class="col-md-4">
-                        <div class="card border rounded p-3 text-center">
-                            <h5 class="mb-1">Enterprise</h5>
-                            <h2 class="text-primary mb-2">$999.00</h2>
-                            <p class="text-muted small">For large organizations.</p>
-                            <hr>
-                            <ul class="list-unstyled text-start small mb-4">
-                                <li><i class="bi bi-check text-success me-2"></i> Unlimited Members</li>
-                                <li><i class="bi bi-check text-success me-2"></i> Unlimited Worksites</li>
-                                <li><i class="bi bi-check text-success me-2"></i> Unlimited Assessments</li>
-                            </ul>
-                            <button class="btn btn-outline-primary w-100 btn-select-plan" data-plan="enterprise" <?= ($subscription['plan_code'] ?? '') === 'enterprise' ? 'disabled' : '' ?>>
-                                <?= ($subscription['plan_code'] ?? '') === 'enterprise' ? 'Current Plan' : 'Select Plan' ?>
-                            </button>
-                        </div>
-                    </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
         </div>

@@ -56,6 +56,7 @@ final class SubscriptionPageData
         return [
             'subscription' => $subscription->toArray(),
             'plan' => $plan?->toArray(),
+            'plans' => array_map(static fn($entry): array => $entry->toArray(), $this->plans->listAll()),
             'usage' => $usage->toArray(),
         ];
     }

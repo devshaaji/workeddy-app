@@ -15,13 +15,15 @@ return new class implements SeederInterface
             'price'         => '0.00',
             'display_order' => 1,
             'features'      => [
+                'max_worksites'                => 1,
                 'video_scan_limit'              => 5,
                 'live_session_limit'            => 5,
                 'live_session_minutes_limit'    => 60,
-                'llm_request_limit'             => 10,
-                'llm_token_limit'               => 1000,
+                'max_assessments_per_month'     => 10,
+                'video_storage_gb'              => 1,
+                'ai_scoring_credits_per_month'  => 10,
                 'max_video_retention_days'      => 7,
-                'max_org_members'               => 3,
+                'max_users'                     => 3,
                 'max_live_concurrent_sessions'  => 1,
             ],
         ],
@@ -32,13 +34,15 @@ return new class implements SeederInterface
             'price'         => '299.00',
             'display_order' => 2,
             'features'      => [
+                'max_worksites'                => 5,
                 'video_scan_limit'              => 500,
                 'live_session_limit'            => 250,
                 'live_session_minutes_limit'    => 3000,
-                'llm_request_limit'             => 500,
-                'llm_token_limit'               => 2000000,
+                'max_assessments_per_month'     => 500,
+                'video_storage_gb'              => 100,
+                'ai_scoring_credits_per_month'  => 500,
                 'max_video_retention_days'      => 180,
-                'max_org_members'               => 50,
+                'max_users'                     => 50,
                 'max_live_concurrent_sessions'  => 4,
             ],
         ],
@@ -49,13 +53,15 @@ return new class implements SeederInterface
             'price'         => '999.00',
             'display_order' => 3,
             'features'      => [
+                'max_worksites'                => null,
                 'video_scan_limit'              => null,
                 'live_session_limit'            => null,
                 'live_session_minutes_limit'    => null,
-                'llm_request_limit'             => null,
-                'llm_token_limit'               => null,
+                'max_assessments_per_month'     => null,
+                'video_storage_gb'              => null,
+                'ai_scoring_credits_per_month'  => null,
                 'max_video_retention_days'      => 3650,
-                'max_org_members'               => null,
+                'max_users'                     => null,
                 'max_live_concurrent_sessions'  => 12,
             ],
         ],
@@ -66,16 +72,12 @@ return new class implements SeederInterface
         $now = (new DateTimeImmutable())->format('Y-m-d H:i:s');
 
         foreach (self::PLANS as $plan) {
-            $exists = $db->fetchOne(
-                'SELECT COUNT(*) FROM subscription_plans WHERE code = ?',
+            $existing = $db->fetchAssociative(
+                'SELECT id FROM subscription_plans WHERE code = ?',
                 [$plan['code']],
             );
 
-            if ((int) $exists > 0) {
-                continue;
-            }
-
-            $db->insert('subscription_plans', [
+            $payload = [
                 'code'          => $plan['code'],
                 'name'          => $plan['name'],
                 'description'   => $plan['description'],
@@ -85,8 +87,18 @@ return new class implements SeederInterface
                 'features'      => json_encode($plan['features'], JSON_THROW_ON_ERROR),
                 'is_active'     => 1,
                 'display_order' => $plan['display_order'],
-                'created_at'    => $now,
                 'updated_at'    => $now,
+            ];
+
+            if ($existing === false) {
+                $db->insert('subscription_plans', $payload + [
+                    'created_at' => $now,
+                ]);
+                continue;
+            }
+
+            $db->update('subscription_plans', $payload, [
+                'id' => (int) $existing['id'],
             ]);
         }
     }
