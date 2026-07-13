@@ -14,9 +14,6 @@ $pageTitle = 'Create Account';
 
     <h1 class="auth-title">Create your workspace</h1>
     <p class="auth-subtitle">Free trial — no credit card required.</p>
-
-    <div class="alert alert-danger align-items-center gap-2 py-2 d-none" id="registration-feedback"></div>
-
     <form id="registrationForm" action="/api/v1/auth/register" method="POST" novalidate>
       <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
 
