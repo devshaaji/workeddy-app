@@ -134,7 +134,7 @@ final class AssessmentSchemaBuilder extends SchemaSupport implements ModuleSchem
         $table->addColumn('processing_error', 'text', ['notnull' => false]);
         $this->uuid($table, 'thumbnail_storage_file_uuid', false);
         $this->uuid($table, 'pose_video_storage_file_uuid', false);
-        $this->uuid($table, 'blurred_storage_file_uuid', false);
+        $table->addColumn('blurred_storage_file_uuid', 'string', ['length' => 36, 'notnull' => false, 'fixed' => true]);
         $table->addColumn('faces_blurred', 'boolean', ['default' => false]);
         $table->addColumn('processing_confidence', 'decimal', ['precision' => 6, 'scale' => 4, 'notnull' => false]);
         $this->createdAt($table);
@@ -161,7 +161,7 @@ final class AssessmentSchemaBuilder extends SchemaSupport implements ModuleSchem
         $table->addColumn('risky_windows_json', 'text');
         $this->uuid($table, 'pose_video_storage_file_uuid', false);
         $this->uuid($table, 'thumbnail_storage_file_uuid', false);
-        $this->uuid($table, 'blurred_storage_file_uuid', false);
+        $table->addColumn('blurred_storage_file_uuid', 'string', ['length' => 36, 'notnull' => false, 'fixed' => true]);
         $this->timestamps($table);
         $table->setPrimaryKey(['id']);
         $table->addIndex(['assessment_uuid'], 'assessment_video_results_assessment_idx');

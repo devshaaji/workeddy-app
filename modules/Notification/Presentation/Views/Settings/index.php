@@ -47,6 +47,16 @@ require $v2Root . '/shared/Views/Partials/page_header.php';
                         <input type="email" id="settingsDefaultFromEmail" class="form-control" placeholder="e.g. noreply@workeddy.com">
                         <div class="form-text">Email address used as the sender for all outbound email notifications.</div>
                     </div>
+                    <div class="col-md-6">
+                        <label for="settingsDefaultReplyToName" class="form-label">Default reply-to name</label>
+                        <input type="text" id="settingsDefaultReplyToName" class="form-control" placeholder="e.g. WorkEddy Support">
+                        <div class="form-text">Optional display name used for reply-to on outbound email notifications.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="settingsDefaultReplyToEmail" class="form-label">Default reply-to email</label>
+                        <input type="email" id="settingsDefaultReplyToEmail" class="form-control" placeholder="e.g. support@workeddy.com">
+                        <div class="form-text">Optional reply-to email address used for outbound email notifications.</div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -116,19 +126,47 @@ require $v2Root . '/shared/Views/Partials/page_header.php';
         <!-- Provider Registry -->
         <section class="card mb-4" style="border-radius: var(--we-radius-lg); box-shadow: var(--we-shadow-sm)">
             <div class="card-header">
-                <h5 class="card-title mb-0">
-                    <i class="bi bi-diagram-3 me-2" style="color: var(--we-primary)"></i>Provider registry
-                </h5>
+                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                    <div>
+                        <h5 class="card-title mb-1">
+                            <i class="bi bi-server me-2" style="color: var(--we-primary)"></i>Provider registry
+                        </h5>
+                        <p class="text-muted small mb-0">Manage notification providers with structured fields.</p>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="button" class="btn btn-outline-primary" id="settingsAddSmtpProviderBtn">
+                            <i class="bi bi-plus-circle me-1"></i>Add email provider
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="settingsAddTwilioProviderBtn">
+                            <i class="bi bi-plus-circle me-1"></i>Add messaging provider
+                        </button>
+                    </div>
+                </div>
             </div>
             <div class="card-body">
-                <p class="text-muted small mb-3">
-                    Define provider connection keys and API endpoints as a JSON array.
-                    Each entry requires a <code>key</code>, <code>provider_type</code>, and <code>config</code> object.
-                </p>
-                <label for="settingsProviderList" class="form-label">Provider configuration (JSON)</label>
-                <textarea id="settingsProviderList" class="form-control font-monospace" rows="8"
-                    placeholder='[{"key":"smtp_main","provider_type":"smtp","config":{"host":"...","port":587}}]'></textarea>
-                <div class="form-text">Invalid JSON will prevent saving. Use valid JSON array syntax.</div>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label for="settingsActiveEmailProvider" class="form-label">Active email provider</label>
+                        <select id="settingsActiveEmailProvider" class="form-select"></select>
+                        <div class="form-text">Select which configured provider handles outbound email.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="settingsActiveSmsProvider" class="form-label">Active SMS provider</label>
+                        <select id="settingsActiveSmsProvider" class="form-select"></select>
+                        <div class="form-text">Select which configured provider handles SMS notifications.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="settingsActiveWhatsappProvider" class="form-label">Active WhatsApp provider</label>
+                        <select id="settingsActiveWhatsappProvider" class="form-select"></select>
+                        <div class="form-text">Select which configured provider handles WhatsApp notifications.</div>
+                    </div>
+                    <div class="col-12">
+                        <div id="settingsProviderRegistryList" class="d-grid gap-3"></div>
+                        <div id="settingsProviderRegistryEmpty" class="border rounded-3 p-4 text-center text-muted" style="border-style: dashed !important;">
+                            No providers configured yet. Add a provider to start sending email, SMS, or WhatsApp notifications.
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 

@@ -19,6 +19,8 @@ final class SendNotificationJob
         private readonly NotificationRequest $request,
         private readonly int $attemptCount = 1,
         private readonly ?string $logUuid = null,
+        private readonly int $channelIndex = 0,
+        private readonly int $providerIndex = 0,
     ) {}
 
     /** @return array<string, mixed> */
@@ -38,6 +40,8 @@ final class SendNotificationJob
             'metadata'          => $this->request->metadata,
             'attempt_count'     => $this->attemptCount,
             'log_uuid'          => $this->logUuid,
+            'channel_index'     => $this->channelIndex,
+            'provider_index'    => $this->providerIndex,
         ];
     }
 

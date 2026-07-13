@@ -42,6 +42,9 @@ final class SmtpEmailGatewayClient implements EmailGatewayClientInterface
         }
 
         $dsn = sprintf('%s://%s%s:%d', $scheme, $credentials, $host, $port);
+        if (in_array($encryption, ['tls', 'ssl'], true)) {
+            $dsn .= '?encryption=' . urlencode($encryption);
+        }
 
         try {
             $transport = Transport::fromDsn($dsn);
@@ -78,15 +81,49 @@ final class SmtpEmailGatewayClient implements EmailGatewayClientInterface
                 success: false,
                 provider: 'smtp',
                 errorMessage: 'SMTP Network error: ' . $e->getMessage(),
-                failureType: FailureType::TEMPORARY_FAILURE
+                failureType: $this->classifyFailure($e->getMessage())
             );
         } catch (\Throwable $e) {
             return new ProviderSendResult(
                 success: false,
                 provider: 'smtp',
                 errorMessage: 'SMTP error: ' . $e->getMessage(),
-                failureType: FailureType::TEMPORARY_FAILURE
+                failureType: $this->classifyFailure($e->getMessage())
             );
         }
+    }
+
+    private function classifyFailure(string $message): FailureType
+    {
+        $normalized = strtolower($message);
+
+        if (
+            str_contains($normalized, '535')
+            || str_contains($normalized, 'authentication failed')
+            || str_contains($normalized, 'invalid login')
+            || str_contains($normalized, 'username')
+        ) {
+            return FailureType::CONFIGURATION_ERROR;
+        }
+
+        if (
+            str_contains($normalized, 'recipient')
+            || str_contains($normalized, 'mailbox unavailable')
+            || str_contains($normalized, 'user unknown')
+        ) {
+            return FailureType::RECIPIENT_INVALID;
+        }
+
+        if (
+            str_contains($normalized, 'timeout')
+            || str_contains($normalized, 'connection')
+            || str_contains($normalized, 'network')
+            || str_contains($normalized, 'could not connect')
+            || str_contains($normalized, 'temporary')
+        ) {
+            return FailureType::TEMPORARY_FAILURE;
+        }
+
+        return FailureType::PERMANENT_FAILURE;
     }
 }

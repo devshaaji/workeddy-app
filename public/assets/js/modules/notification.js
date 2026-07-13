@@ -262,6 +262,365 @@
 
     var settingsPage = document.getElementById('notificationSettingsPage');
     if (settingsPage && window.App) {
+        var providerDefinitions = {
+            smtp: {
+                label: 'SMTP',
+                channels: ['email'],
+                requiredFields: ['host', 'port'],
+                optionalFields: ['user', 'pass', 'encryption'],
+                sensitiveFields: ['pass']
+            },
+            twilio: {
+                label: 'Twilio',
+                channels: ['sms', 'whatsapp'],
+                requiredFields: ['account_sid', 'auth_token', 'sms_from'],
+                optionalFields: ['whatsapp_from', 'status_callback_url'],
+                sensitiveFields: ['auth_token']
+            }
+        };
+
+        var providerFieldMeta = {
+            host: { label: 'SMTP host', type: 'text', placeholder: 'smtp.hostinger.com' },
+            port: { label: 'SMTP port', type: 'number', placeholder: '587' },
+            user: { label: 'SMTP username', type: 'text', placeholder: 'admin@workeddy.com' },
+            pass: { label: 'SMTP password', type: 'password', placeholder: 'Leave blank to keep current password' },
+            encryption: { label: 'Encryption', type: 'select', options: ['', 'tls', 'ssl'] },
+            account_sid: { label: 'Account SID', type: 'text', placeholder: 'AC...' },
+            auth_token: { label: 'Auth token', type: 'password', placeholder: 'Leave blank to keep current token' },
+            sms_from: { label: 'SMS from', type: 'text', placeholder: '+1234567890' },
+            whatsapp_from: { label: 'WhatsApp from', type: 'text', placeholder: 'whatsapp:+1234567890' },
+            status_callback_url: { label: 'Status callback URL', type: 'url', placeholder: 'https://example.com/webhooks/status' }
+        };
+
+        var providerState = {
+            providerList: [],
+            activeProviderMap: {}
+        };
+
+        function clone(value) {
+            return JSON.parse(JSON.stringify(value));
+        }
+
+        function supportedChannels(type) {
+            return clone((providerDefinitions[type] && providerDefinitions[type].channels) || []);
+        }
+
+        function providerFields(type) {
+            var definition = providerDefinitions[type];
+            if (!definition) {
+                return [];
+            }
+            return definition.requiredFields.concat(definition.optionalFields);
+        }
+
+        function normalizeProvider(provider, index) {
+            var type = String(provider && provider.provider_type ? provider.provider_type : 'smtp');
+            if (!providerDefinitions[type]) {
+                type = 'smtp';
+            }
+
+            var normalized = {
+                key: String(provider && provider.key ? provider.key : (type + '_' + (index + 1))),
+                provider_type: type,
+                enabled: provider && typeof provider.enabled === 'boolean' ? provider.enabled : true,
+                channels: supportedChannels(type),
+                priority: parseInt(provider && provider.priority, 10) || (index + 1),
+                config: {}
+            };
+
+            var sourceConfig = provider && provider.config ? provider.config : {};
+            providerFields(type).forEach(function (field) {
+                if (Object.prototype.hasOwnProperty.call(sourceConfig, field)) {
+                    normalized.config[field] = sourceConfig[field];
+                } else {
+                    normalized.config[field] = '';
+                }
+            });
+
+            return normalized;
+        }
+
+        function normalizeProviderList(providerList) {
+            return (providerList || []).map(function (provider, index) {
+                return normalizeProvider(provider, index);
+            });
+        }
+
+        function providersForChannel(channel) {
+            return providerState.providerList.filter(function (provider) {
+                return Array.isArray(provider.channels) && provider.channels.indexOf(channel) !== -1;
+            });
+        }
+
+        function ensureActiveProviderMap() {
+            ['email', 'sms', 'whatsapp'].forEach(function (channel) {
+                var providers = providersForChannel(channel);
+                var current = providerState.activeProviderMap[channel] || '';
+                var exists = providers.some(function (provider) { return provider.key === current; });
+                if (!exists) {
+                    providerState.activeProviderMap[channel] = providers[0] ? providers[0].key : '';
+                }
+            });
+        }
+
+        function renderActiveProviderSelect(channel, selectId, emptyLabel) {
+            var select = document.getElementById(selectId);
+            if (!select) {
+                return;
+            }
+
+            var providers = providersForChannel(channel);
+            var options = ['<option value="">' + esc(emptyLabel) + '</option>'];
+            options = options.concat(providers.map(function (provider) {
+                return '<option value="' + esc(provider.key) + '">' + esc(provider.key) + '</option>';
+            }));
+            select.innerHTML = options.join('');
+            select.value = providerState.activeProviderMap[channel] || '';
+        }
+
+        function fieldInputHtml(provider, index, field) {
+            var meta = providerFieldMeta[field] || { label: field, type: 'text', placeholder: '' };
+            var value = provider.config && provider.config[field] !== undefined ? provider.config[field] : '';
+            var isSensitive = providerDefinitions[provider.provider_type].sensitiveFields.indexOf(field) !== -1;
+            var hasStoredValue = isSensitive && value !== '' && value !== null && value !== undefined;
+            var fieldId = 'settingsProvider' + index + '_' + field;
+
+            if (meta.type === 'select') {
+                return '<div class="col-md-6">' +
+                    '<label for="' + esc(fieldId) + '" class="form-label">' + esc(meta.label) + '</label>' +
+                    '<select id="' + esc(fieldId) + '" class="form-select" data-provider-index="' + esc(index) + '" data-config-field="' + esc(field) + '">' +
+                    meta.options.map(function (option) {
+                        var selected = String(value) === String(option) ? ' selected' : '';
+                        var label = option === '' ? 'None' : String(option).toUpperCase();
+                        return '<option value="' + esc(option) + '"' + selected + '>' + esc(label) + '</option>';
+                    }).join('') +
+                    '</select>' +
+                    '</div>';
+            }
+
+            return '<div class="col-md-6">' +
+                '<label for="' + esc(fieldId) + '" class="form-label">' + esc(meta.label) + '</label>' +
+                '<input id="' + esc(fieldId) + '" type="' + esc(meta.type || 'text') + '" class="form-control" ' +
+                'data-provider-index="' + esc(index) + '" data-config-field="' + esc(field) + '" ' +
+                'value="' + esc(isSensitive ? '' : value) + '" placeholder="' + esc(meta.placeholder || '') + '">' +
+                (hasStoredValue ? '<div class="form-text">Leave blank to keep the current saved value.</div>' : '') +
+                '</div>';
+        }
+
+        function renderProviderCard(provider, index) {
+            var definition = providerDefinitions[provider.provider_type];
+            var supported = definition.channels.map(function (channel) {
+                return channelBadge(channel);
+            }).join(' ');
+            var fields = providerFields(provider.provider_type).map(function (field) {
+                return fieldInputHtml(provider, index, field);
+            }).join('');
+
+            return '<section class="card border" data-provider-index="' + esc(index) + '">' +
+                '<div class="card-header d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">' +
+                '<div>' +
+                '<h6 class="mb-1">' + esc(provider.key || ('Provider ' + (index + 1))) + '</h6>' +
+                '<div class="small text-muted">Supported channels: ' + supported + '</div>' +
+                '</div>' +
+                '<button type="button" class="btn btn-sm btn-outline-danger" data-provider-action="remove" data-provider-index="' + esc(index) + '">' +
+                '<i class="bi bi-trash me-1"></i>Remove' +
+                '</button>' +
+                '</div>' +
+                '<div class="card-body">' +
+                '<div class="row g-4">' +
+                '<div class="col-md-4">' +
+                '<label class="form-label">Provider key</label>' +
+                '<input type="text" class="form-control" data-provider-index="' + esc(index) + '" data-provider-field="key" value="' + esc(provider.key) + '" placeholder="e.g. smtp_main">' +
+                '</div>' +
+                '<div class="col-md-4">' +
+                '<label class="form-label">Provider type</label>' +
+                '<select class="form-select" data-provider-index="' + esc(index) + '" data-provider-field="provider_type">' +
+                Object.keys(providerDefinitions).map(function (type) {
+                    var selected = provider.provider_type === type ? ' selected' : '';
+                    return '<option value="' + esc(type) + '"' + selected + '>' + esc(providerDefinitions[type].label) + '</option>';
+                }).join('') +
+                '</select>' +
+                '</div>' +
+                '<div class="col-md-2">' +
+                '<label class="form-label">Priority</label>' +
+                '<input type="number" min="1" class="form-control" data-provider-index="' + esc(index) + '" data-provider-field="priority" value="' + esc(provider.priority) + '">' +
+                '</div>' +
+                '<div class="col-md-2 d-flex align-items-end">' +
+                '<div class="form-check form-switch mb-2">' +
+                '<input type="checkbox" class="form-check-input" data-provider-index="' + esc(index) + '" data-provider-field="enabled"' + (provider.enabled ? ' checked' : '') + '>' +
+                '<label class="form-check-label">Enabled</label>' +
+                '</div>' +
+                '</div>' +
+                fields +
+                '</div>' +
+                '</div>' +
+                '</section>';
+        }
+
+        function renderProviderRegistry() {
+            ensureActiveProviderMap();
+
+            renderActiveProviderSelect('email', 'settingsActiveEmailProvider', 'No email provider selected');
+            renderActiveProviderSelect('sms', 'settingsActiveSmsProvider', 'No SMS provider selected');
+            renderActiveProviderSelect('whatsapp', 'settingsActiveWhatsappProvider', 'No WhatsApp provider selected');
+
+            var list = document.getElementById('settingsProviderRegistryList');
+            var emptyState = document.getElementById('settingsProviderRegistryEmpty');
+            if (!list || !emptyState) {
+                return;
+            }
+
+            if (!providerState.providerList.length) {
+                list.innerHTML = '';
+                emptyState.classList.remove('d-none');
+                return;
+            }
+
+            emptyState.classList.add('d-none');
+            list.innerHTML = providerState.providerList.map(function (provider, index) {
+                return renderProviderCard(provider, index);
+            }).join('');
+        }
+
+        function syncProviderState(values) {
+            providerState.providerList = normalizeProviderList(values.provider_list || []);
+            providerState.activeProviderMap = clone(values.active_provider_per_channel || {});
+            renderProviderRegistry();
+        }
+
+        function buildProviderPayload() {
+            var providerList = normalizeProviderList(providerState.providerList || []);
+            var activeProviderMap = {
+                email: String(getFieldValue('settingsActiveEmailProvider') || '').trim(),
+                sms: String(getFieldValue('settingsActiveSmsProvider') || '').trim(),
+                whatsapp: String(getFieldValue('settingsActiveWhatsappProvider') || '').trim()
+            };
+
+            return {
+                providerList: providerList,
+                activeProviderMap: activeProviderMap
+            };
+        }
+
+        function nextProviderKey(type) {
+            var prefix = type === 'twilio' ? 'twilio' : 'smtp';
+            var index = 1;
+            var candidate = prefix + '_' + index;
+
+            while (providerState.providerList.some(function (provider) { return provider.key === candidate; })) {
+                index += 1;
+                candidate = prefix + '_' + index;
+            }
+
+            return candidate;
+        }
+
+        function addProvider(type) {
+            var nextIndex = providerState.providerList.length + 1;
+            providerState.providerList.push(normalizeProvider({
+                key: nextProviderKey(type),
+                provider_type: type,
+                enabled: true,
+                priority: nextIndex,
+                config: {}
+            }, providerState.providerList.length));
+            renderProviderRegistry();
+        }
+
+        function removeProvider(index) {
+            providerState.providerList.splice(index, 1);
+            providerState.providerList = normalizeProviderList(providerState.providerList);
+            renderProviderRegistry();
+        }
+
+        function updateProviderField(index, field, value, rerender) {
+            var provider = providerState.providerList[index];
+            if (!provider) {
+                return;
+            }
+
+            var previousKey = provider.key;
+
+            if (field === 'enabled') {
+                provider.enabled = !!value;
+            } else if (field === 'priority') {
+                provider.priority = parseInt(value, 10) || (index + 1);
+            } else if (field === 'provider_type') {
+                provider.provider_type = providerDefinitions[value] ? value : 'smtp';
+                provider.channels = supportedChannels(provider.provider_type);
+                provider.config = normalizeProvider(provider, index).config;
+                renderProviderRegistry();
+                return;
+            } else {
+                provider[field] = String(value || '').trim();
+            }
+
+            if (field === 'key' && previousKey !== provider.key) {
+                ['email', 'sms', 'whatsapp'].forEach(function (channel) {
+                    if (providerState.activeProviderMap[channel] === previousKey) {
+                        providerState.activeProviderMap[channel] = provider.key;
+                    }
+                });
+            }
+
+            if (rerender) {
+                renderProviderRegistry();
+            }
+        }
+
+        function updateProviderConfig(index, field, value) {
+            var provider = providerState.providerList[index];
+            if (!provider) {
+                return;
+            }
+
+            if (!provider.config) {
+                provider.config = {};
+            }
+
+            if (value === '' && providerDefinitions[provider.provider_type].sensitiveFields.indexOf(field) !== -1) {
+                return;
+            }
+
+            if (field === 'port') {
+                provider.config[field] = value === '' ? '' : (parseInt(value, 10) || '');
+            } else {
+                provider.config[field] = value;
+            }
+        }
+
+        function validateProviderPayload(payload) {
+            var seenKeys = {};
+
+            for (var i = 0; i < payload.providerList.length; i += 1) {
+                var provider = payload.providerList[i];
+                var definition = providerDefinitions[provider.provider_type];
+                var key = String(provider.key || '').trim();
+
+                if (!key) {
+                    return 'Every provider must have a provider key.';
+                }
+
+                if (seenKeys[key]) {
+                    return 'Provider keys must be unique.';
+                }
+                seenKeys[key] = true;
+
+                if (!provider.enabled) {
+                    continue;
+                }
+
+                for (var j = 0; j < definition.requiredFields.length; j += 1) {
+                    var field = definition.requiredFields[j];
+                    var value = provider.config ? provider.config[field] : '';
+                    if (value === '' || value === null || value === undefined) {
+                        return definition.label + ' provider "' + key + '" is missing ' + field + '.';
+                    }
+                }
+            }
+
+            return null;
+        }
 
         function loadSettings() {
             App.api.get('/api/v1/notification/settings').then(function (res) {
@@ -272,13 +631,15 @@
                 var values = res.data.values || {};
                 setFieldValue('settingsDefaultFromName', values.default_from_name || '');
                 setFieldValue('settingsDefaultFromEmail', values.default_from_email || '');
+                setFieldValue('settingsDefaultReplyToName', values.default_reply_to_name || '');
+                setFieldValue('settingsDefaultReplyToEmail', values.default_reply_to_email || '');
                 setFieldValue('settingsQueueEnabled', !!values.queue_enabled);
                 setFieldValue('settingsFallbackEnabled', !!values.fallback_enabled);
                 setFieldValue('settingsRetryMaxAttempts', values.retry_max_attempts || 3);
                 setFieldValue('settingsRetryDelaySeconds', values.retry_delay_seconds || 60);
                 setFieldValue('settingsHttpTimeout', values.http_timeout_seconds || 10);
                 setFieldValue('settingsHttpConnectTimeout', values.http_connect_timeout_seconds || 5);
-                setFieldValue('settingsProviderList', values.provider_list || '[]');
+                syncProviderState(values);
             });
         }
 
@@ -322,6 +683,8 @@
                 var data = {
                     default_from_name: getFieldValue('settingsDefaultFromName') || '',
                     default_from_email: getFieldValue('settingsDefaultFromEmail') || '',
+                    default_reply_to_name: getFieldValue('settingsDefaultReplyToName') || '',
+                    default_reply_to_email: getFieldValue('settingsDefaultReplyToEmail') || '',
                     queue_enabled: !!getFieldValue('settingsQueueEnabled'),
                     fallback_enabled: !!getFieldValue('settingsFallbackEnabled'),
                     retry_max_attempts: parseInt(getFieldValue('settingsRetryMaxAttempts'), 10) || 3,
@@ -330,14 +693,15 @@
                     http_connect_timeout_seconds: parseInt(getFieldValue('settingsHttpConnectTimeout'), 10) || 5,
                 };
 
-                var providerListRaw = getFieldValue('settingsProviderList');
-                try {
-                    var parsed = JSON.parse(providerListRaw);
-                    data.provider_list = Array.isArray(parsed) ? parsed : [];
-                } catch (_) {
-                    App.notify.warning('Provider JSON is invalid. Check syntax before saving.');
+                var providerPayload = buildProviderPayload();
+                var providerError = validateProviderPayload(providerPayload);
+                if (providerError) {
+                    App.notify.warning(providerError);
                     return;
                 }
+
+                data.provider_list = providerPayload.providerList;
+                data.active_provider_per_channel = providerPayload.activeProviderMap;
 
                 var submitBtn = document.getElementById('settingsSaveBtn');
                 App.ui.setButtonLoading(submitBtn, true);
@@ -357,6 +721,89 @@
                     }
                 });
             });
+
+            ['settingsActiveEmailProvider', 'settingsActiveSmsProvider', 'settingsActiveWhatsappProvider'].forEach(function (id) {
+                var select = document.getElementById(id);
+                if (!select) {
+                    return;
+                }
+                select.addEventListener('change', function () {
+                    if (id === 'settingsActiveEmailProvider') {
+                        providerState.activeProviderMap.email = select.value || '';
+                    } else if (id === 'settingsActiveSmsProvider') {
+                        providerState.activeProviderMap.sms = select.value || '';
+                    } else if (id === 'settingsActiveWhatsappProvider') {
+                        providerState.activeProviderMap.whatsapp = select.value || '';
+                    }
+                });
+            });
+
+            var addSmtpProviderBtn = document.getElementById('settingsAddSmtpProviderBtn');
+            if (addSmtpProviderBtn) {
+                addSmtpProviderBtn.addEventListener('click', function () {
+                    addProvider('smtp');
+                });
+            }
+
+            var addTwilioProviderBtn = document.getElementById('settingsAddTwilioProviderBtn');
+            if (addTwilioProviderBtn) {
+                addTwilioProviderBtn.addEventListener('click', function () {
+                    addProvider('twilio');
+                });
+            }
+
+            var registry = document.getElementById('settingsProviderRegistryList');
+            if (registry) {
+                registry.addEventListener('click', function (event) {
+                    var removeBtn = event.target.closest('[data-provider-action="remove"]');
+                    if (!removeBtn) {
+                        return;
+                    }
+                    removeProvider(parseInt(removeBtn.getAttribute('data-provider-index'), 10));
+                });
+
+                registry.addEventListener('input', function (event) {
+                    var target = event.target;
+                    if (!target) {
+                        return;
+                    }
+
+                    var providerIndex = parseInt(target.getAttribute('data-provider-index'), 10);
+                    if (Number.isNaN(providerIndex)) {
+                        return;
+                    }
+
+                    var providerField = target.getAttribute('data-provider-field');
+                    var configField = target.getAttribute('data-config-field');
+
+                    if (providerField) {
+                        updateProviderField(providerIndex, providerField, target.type === 'checkbox' ? target.checked : target.value, false);
+                    } else if (configField) {
+                        updateProviderConfig(providerIndex, configField, target.value);
+                    }
+                });
+
+                registry.addEventListener('change', function (event) {
+                    var target = event.target;
+                    if (!target) {
+                        return;
+                    }
+
+                    var providerIndex = parseInt(target.getAttribute('data-provider-index'), 10);
+                    if (Number.isNaN(providerIndex)) {
+                        return;
+                    }
+
+                    var providerField = target.getAttribute('data-provider-field');
+                    var configField = target.getAttribute('data-config-field');
+
+                    if (providerField) {
+                        updateProviderField(providerIndex, providerField, target.type === 'checkbox' ? target.checked : target.value, providerField === 'key' || providerField === 'provider_type');
+                    } else if (configField) {
+                        updateProviderConfig(providerIndex, configField, target.value);
+                    }
+                });
+            }
         }
 
         loadSettings();

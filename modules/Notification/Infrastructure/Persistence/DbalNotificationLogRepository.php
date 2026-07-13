@@ -6,6 +6,7 @@ namespace WorkEddy\Modules\Notification\Infrastructure\Persistence;
 
 use WorkEddy\Modules\Notification\Contracts\NotificationLogRepositoryInterface;
 use WorkEddy\Modules\Notification\Domain\NotificationChannel;
+use WorkEddy\Modules\Notification\Domain\NotificationDeliveryAttempt;
 use WorkEddy\Modules\Notification\Domain\NotificationDeliveryLog;
 use WorkEddy\Platform\Clock\IClock;
 use WorkEddy\Shared\Support\DateFormatter;
@@ -64,6 +65,44 @@ final class DbalNotificationLogRepository implements NotificationLogRepositoryIn
         return $row ? $this->mapRowToLog($row) : null;
     }
 
+    public function saveAttempt(NotificationDeliveryAttempt $attempt): void
+    {
+        $data = [
+            'uuid' => $attempt->uuid,
+            'log_uuid' => $attempt->logUuid,
+            'channel' => $attempt->channel->value,
+            'provider_key' => $attempt->providerKey,
+            'attempt_count' => $attempt->attemptCount,
+            'status' => $attempt->status,
+            'failure_reason' => $attempt->failureReason,
+            'failure_type' => $attempt->failureType?->value,
+            'provider_message_id' => $attempt->providerMessageId,
+            'updated_at' => ($this->clock->now())->format('Y-m-d H:i:s'),
+        ];
+
+        if ($attempt->id === null) {
+            $data['created_at'] = ($this->clock->now())->format('Y-m-d H:i:s');
+            $this->connection->insert('notification_log_attempts', $data);
+            return;
+        }
+
+        $this->connection->update('notification_log_attempts', $data, ['id' => $attempt->id]);
+    }
+
+    public function findAttemptsByLogUuid(string $logUuid): array
+    {
+        $rows = $this->connection->createQueryBuilder()
+            ->select('*')
+            ->from('notification_log_attempts')
+            ->where('log_uuid = :log_uuid')
+            ->setParameter('log_uuid', $logUuid)
+            ->orderBy('id', 'ASC')
+            ->executeQuery()
+            ->fetchAllAssociative();
+
+        return array_map([$this, 'mapRowToAttempt'], $rows);
+    }
+
     public function paginate(int $limit = 50, int $offset = 0): array
     {
         $qb = $this->connection->createQueryBuilder();
@@ -113,6 +152,23 @@ final class DbalNotificationLogRepository implements NotificationLogRepositoryIn
             id: (int) $row['id'],
             createdAt: DateFormatter::fromNaiveDbString($row['created_at'] ?? null),
             updatedAt: DateFormatter::fromNaiveDbString($row['updated_at'] ?? null)
+        );
+    }
+
+    private function mapRowToAttempt(array $row): NotificationDeliveryAttempt
+    {
+        return new NotificationDeliveryAttempt(
+            uuid: $row['uuid'],
+            logUuid: $row['log_uuid'],
+            channel: NotificationChannel::from($row['channel']),
+            providerKey: $row['provider_key'],
+            attemptCount: (int) $row['attempt_count'],
+            status: $row['status'],
+            failureReason: $row['failure_reason'],
+            failureType: isset($row['failure_type']) ? \WorkEddy\Modules\Notification\Infrastructure\Clients\FailureType::from($row['failure_type']) : null,
+            providerMessageId: $row['provider_message_id'] ?? null,
+            createdAt: DateFormatter::fromNaiveDbString($row['created_at'] ?? null),
+            id: (int) $row['id'],
         );
     }
 }

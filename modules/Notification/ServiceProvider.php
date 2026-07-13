@@ -73,15 +73,16 @@ final class ServiceProvider implements ModuleServiceProviderInterface
             \WorkEddy\Modules\Notification\Infrastructure\Clients\Smtp\SmtpEmailGatewayClient::class => \DI\autowire(),
             \WorkEddy\Modules\Notification\Application\SendNotificationUseCase::class => static function (ContainerInterface $c) {
                 return new \WorkEddy\Modules\Notification\Application\SendNotificationUseCase(
-                    $c->get(\WorkEddy\Modules\Notification\Contracts\ChannelResolverInterface::class),
                     $c->get(\WorkEddy\Modules\Notification\Contracts\TemplateRendererInterface::class),
                     $c->get(\WorkEddy\Modules\Notification\Contracts\NotificationLogRepositoryInterface::class),
                     $c->get(\WorkEddy\Platform\Identity\UuidGeneratorContract::class),
-                    $c,
                     $c->get(\WorkEddy\Platform\Settings\SettingsService::class),
                     $c->get(\WorkEddy\Platform\Queue\IQueueService::class),
                     $c->get(IClock::class),
                     $c->get(\WorkEddy\Modules\Notification\Application\ResolveRecipientNotificationChannels::class),
+                    $c->get(\WorkEddy\Modules\Notification\Application\ResolveNotificationChannels::class),
+                    $c->get(\WorkEddy\Modules\Notification\Infrastructure\Clients\ProviderRouter::class),
+                    $c->get(\WorkEddy\Modules\Notification\Infrastructure\Providers\InAppNotificationProvider::class),
                 );
             },
         ];

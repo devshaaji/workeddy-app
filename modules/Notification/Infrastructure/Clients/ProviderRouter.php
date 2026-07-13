@@ -19,42 +19,63 @@ final class ProviderRouter
 
     public function resolve(string $channel): ResolvedProvider
     {
-        $activeMap = $this->settings->get('notification.' . NotificationSettings::ACTIVE_PROVIDER_PER_CHANNEL, []);
-        $providerKey = $activeMap[$channel] ?? null;
-
-        if (!$providerKey) {
+        $providers = $this->resolveAllForChannel($channel);
+        if ($providers === []) {
             throw new \RuntimeException(sprintf('No active provider configured for channel: %s', $channel));
         }
 
+        return $providers[0];
+    }
+
+    /**
+     * @return list<ResolvedProvider>
+     */
+    public function resolveAllForChannel(string $channel): array
+    {
         $providerList = $this->settings->get('notification.' . NotificationSettings::PROVIDER_LIST, []);
+        $activeMap = $this->settings->get('notification.' . NotificationSettings::ACTIVE_PROVIDER_PER_CHANNEL, []);
+        $primaryKey = $activeMap[$channel] ?? null;
 
-        $providerData = null;
-        foreach ($providerList as $p) {
-            if (($p['key'] ?? '') === $providerKey) {
-                $providerData = $p;
-                break;
+        $entries = [];
+        foreach ($providerList as $providerData) {
+            $entry = ProviderEntry::fromArray(is_array($providerData) ? $providerData : []);
+
+            if (!$entry->enabled) {
+                continue;
             }
+
+            if (!in_array($channel, $entry->channels, true)) {
+                continue;
+            }
+
+            $error = ProviderTypeRegistry::validate($entry->providerType, $entry->config);
+            if ($error) {
+                continue;
+            }
+
+            $entries[] = $entry;
         }
 
-        if (!$providerData) {
-            throw new \RuntimeException(sprintf('Provider key "%s" not found in provider list', $providerKey));
-        }
+        usort($entries, static function (ProviderEntry $left, ProviderEntry $right) use ($primaryKey): int {
+            if ($primaryKey !== null) {
+                if ($left->key === $primaryKey && $right->key !== $primaryKey) {
+                    return -1;
+                }
+                if ($right->key === $primaryKey && $left->key !== $primaryKey) {
+                    return 1;
+                }
+            }
 
-        $entry = ProviderEntry::fromArray($providerData);
+            return [$left->priority, $left->key] <=> [$right->priority, $right->key];
+        });
 
-        if (!$entry->enabled) {
-            throw new \RuntimeException(sprintf('Provider "%s" is disabled', $providerKey));
-        }
+        return array_values(array_map(function (ProviderEntry $entry): ResolvedProvider {
+            return new ResolvedProvider($this->container->get($this->clientClassFor($entry)), $entry);
+        }, $entries));
+    }
 
-        if (!in_array($channel, $entry->channels, true)) {
-            throw new \RuntimeException(sprintf('Provider "%s" does not support channel "%s"', $providerKey, $channel));
-        }
-
-        $error = ProviderTypeRegistry::validate($entry->providerType, $entry->config);
-        if ($error) {
-            throw new \RuntimeException(sprintf('Invalid configuration for provider "%s": %s', $providerKey, $error));
-        }
-
+    private function clientClassFor(ProviderEntry $entry): string
+    {
         $clientMap = [
             'twilio' => \WorkEddy\Modules\Notification\Infrastructure\Clients\Twilio\TwilioMessagingClient::class,
             'smtp' => \WorkEddy\Modules\Notification\Infrastructure\Clients\Smtp\SmtpEmailGatewayClient::class,
@@ -64,8 +85,6 @@ final class ProviderRouter
             throw new \RuntimeException(sprintf('Unsupported provider type: %s', $entry->providerType));
         }
 
-        $client = $this->container->get($clientMap[$entry->providerType]);
-
-        return new ResolvedProvider($client, $entry);
+        return $clientMap[$entry->providerType];
     }
 }

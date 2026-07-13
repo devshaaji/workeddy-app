@@ -71,7 +71,7 @@ final class NotificationApiController
 
         return Response::json([
             'status' => 'ok',
-            'data' => $this->serializeLog($log),
+            'data' => $this->serializeLog($log, true),
         ]);
     }
 
@@ -297,9 +297,9 @@ final class NotificationApiController
         }
     }
 
-    private function serializeLog(object $log): array
+    private function serializeLog(object $log, bool $includeAttempts = false): array
     {
-        return [
+        $data = [
             'id' => $log->id,
             'uuid' => $log->uuid,
             'notificationType' => $log->notificationType,
@@ -321,6 +321,26 @@ final class NotificationApiController
             'failedAt' => $log->failedAt?->format(\DateTimeInterface::ATOM),
             'createdAt' => $log->createdAt?->format(\DateTimeInterface::ATOM),
         ];
+
+        if ($includeAttempts) {
+            $data['attempts'] = array_map(function (object $attempt): array {
+                return [
+                    'id' => $attempt->id,
+                    'uuid' => $attempt->uuid,
+                    'logUuid' => $attempt->logUuid,
+                    'channel' => $attempt->channel->value,
+                    'providerKey' => $attempt->providerKey,
+                    'attemptCount' => $attempt->attemptCount,
+                    'status' => $attempt->status,
+                    'failureReason' => $attempt->failureReason,
+                    'failureType' => $attempt->failureType?->value,
+                    'providerMessageId' => $attempt->providerMessageId,
+                    'createdAt' => $attempt->createdAt?->format(\DateTimeInterface::ATOM),
+                ];
+            }, $this->logRepository->findAttemptsByLogUuid($log->uuid));
+        }
+
+        return $data;
     }
 
     private function serializeInboxNotification(InAppNotification $notification): array

@@ -39,6 +39,12 @@ final class SendNotificationJobHandler implements QueueJobHandlerInterface
             metadata: $p['metadata'] ?? [],
         );
 
-        $this->useCase->execute($request, (int) ($p['attempt_count'] ?? 1), $p['log_uuid'] ?? null);
+        $this->useCase->execute(
+            $request,
+            (int) ($p['attempt_count'] ?? 1),
+            $p['log_uuid'] ?? null,
+            (int) ($p['channel_index'] ?? 0),
+            (int) ($p['provider_index'] ?? 0),
+        );
     }
 }
