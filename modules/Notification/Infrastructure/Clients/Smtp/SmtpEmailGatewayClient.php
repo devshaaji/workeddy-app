@@ -48,7 +48,7 @@ final class SmtpEmailGatewayClient implements EmailGatewayClientInterface
             $mailer = new Mailer($transport);
 
             $email = (new Email())
-                ->from(sprintf('%s <%s>', $payload->fromName ?? 'BrowseMX', $payload->fromEmail ?? 'noreply@browsemx.local'))
+                ->from(sprintf('%s <%s>', $payload->fromName ?? 'BrowseMX', $payload->fromEmail ?? 'no-reply@workeddy.com'))
                 ->to($payload->toEmail)
                 ->subject($payload->subject);
 

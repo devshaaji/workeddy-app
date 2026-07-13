@@ -18,7 +18,7 @@ final class NotificationSettingsProvider implements IModuleSettingsProvider
     /** @return SettingDefinition[] */
     public function getDefinitions(): array
     {
-        $defaultFromEmail = $this->envString('MAIL_FROM_ADDRESS', 'noreply@browsemx.local');
+        $defaultFromEmail = $this->envString('MAIL_FROM_ADDRESS', 'no-reply@workeddy.com');
         $defaultFromName = $this->envString('MAIL_FROM_NAME', 'BrowseMX');
         $defaultReplyToEmail = $this->envString('MAIL_REPLY_TO_ADDRESS', '');
         $defaultReplyToName = $this->envString('MAIL_REPLY_TO_NAME', '');

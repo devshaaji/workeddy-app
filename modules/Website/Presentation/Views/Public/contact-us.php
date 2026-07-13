@@ -8,7 +8,8 @@
           <p class="text-muted mb-4">Contact WorkEddy to request a pilot, schedule a product conversation, discuss research collaboration, ask about privacy and worker trust, or explore partnership opportunities.</p>
         </div>
         <div class="col-lg-7">
-          <form class="contact-form" action="mailto:hello@workeddy.com" method="post" enctype="text/plain">
+          <div id="contact-feedback" class="d-none mb-3"></div>
+          <form id="contact-form" class="contact-form needs-validation" action="/contact-us/submit" method="post" novalidate>
             <div class="row g-3">
               <div class="col-md-6">
                 <label for="contact-name" class="form-label">Name</label>

@@ -35,7 +35,7 @@ final class EmailNotificationProvider implements NotificationProviderInterface
         try {
             $resolved = $this->providerRouter->resolve('email');
 
-            $defaultFromEmail = (string) $this->settings->get('notification.default_from_email', 'noreply@browsemx.local');
+            $defaultFromEmail = (string) $this->settings->get('notification.default_from_email', 'no-reply@workeddy.com');
             $defaultFromName = (string) $this->settings->get('notification.default_from_name', 'BrowseMX');
             $defaultReplyToEmail = (string) $this->settings->get('notification.default_reply_to_email', '');
             $defaultReplyToName = (string) $this->settings->get('notification.default_reply_to_name', '');

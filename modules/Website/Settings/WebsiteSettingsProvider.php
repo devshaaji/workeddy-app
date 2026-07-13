@@ -39,7 +39,7 @@ final class WebsiteSettingsProvider implements IModuleSettingsProvider
                 key: 'contact_email',
                 module: 'website',
                 type: SettingType::STRING,
-                default: 'support@browsemx.local',
+                default: 'support@workeddy.com',
                 label: 'Contact Email',
                 description: 'The primary email address displayed on the contact page.',
             ),
