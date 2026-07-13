@@ -29,7 +29,7 @@ $breadcrumbs = [
 require $v2Root . '/shared/Views/Partials/page_header.php';
 ?>
 
-<div class="container-xxl flex-grow-1 py-4" id="workerVoiceShowPage">
+<div class="py-4" id="workerVoiceShowPage">
     <div id="workerVoiceShowAlert"></div>
 
     <div class="row g-4">

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /** @var array<string, mixed> $summary */
@@ -28,7 +29,7 @@ $contentSections = $preview !== null && is_array($preview->snapshot['sections'] 
 $emptyMessage = 'No previewable revision is available.';
 ?>
 
-<div class="container-xxl flex-grow-1 py-4 contentManagedPage">
+<div class="py-4 contentManagedPage">
     <div class="card mb-4" style="border-radius: var(--we-radius-lg); box-shadow: var(--we-shadow-sm)">
         <div class="card-body d-flex flex-wrap gap-3 justify-content-between align-items-start">
             <div>

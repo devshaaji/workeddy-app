@@ -19,7 +19,7 @@ require $v2Root . '/shared/Views/Partials/page_header.php';
 ?>
 
 <div
-    class="container-xxl flex-grow-1 py-4"
+    class="py-4"
     id="workerVoiceSubmitPage"
     data-requires-organization-scope="true"
     data-prefill-task="<?= htmlspecialchars($prefillTask, ENT_QUOTES, 'UTF-8') ?>"

@@ -49,9 +49,9 @@ $jsonScript = static fn(mixed $value): string => (string) json_encode(
         </a>
         <div class="ce-header-divider"></div>
         <input class="ce-header-title" id="ceHeaderTitle" type="text"
-               value="<?= $e($draftTitle) ?>"
-               placeholder="Page title"
-               autocomplete="off">
+            value="<?= $e($draftTitle) ?>"
+            placeholder="Page title"
+            autocomplete="off">
         <span class="ce-status-badge ce-status-badge--<?= $e($pageStatus) ?>" id="ceStatusBadge"><?= $e($pageStatus) ?></span>
         <span class="ce-save-state" id="ceSaveState">
             <span class="ce-save-state__dot"></span>
@@ -145,26 +145,26 @@ $jsonScript = static fn(mixed $value): string => (string) json_encode(
         <main class="ce-workspace" id="ceWorkspace">
             <!-- Loading skeleton (visible until JS loads data) -->
             <?php if ($draft !== null): ?>
-            <div class="ce-workspace__section ce-skeleton-container" id="ceSkeleton">
-                <div class="ce-skeleton__header">
-                    <div class="ce-skeleton__line ce-skeleton__line--short"></div>
+                <div class="ce-workspace__section ce-skeleton-container" id="ceSkeleton">
+                    <div class="ce-skeleton__header">
+                        <div class="ce-skeleton__line ce-skeleton__line--short"></div>
+                    </div>
+                    <div class="ce-skeleton__toolbar">
+                        <div class="ce-skeleton__line ce-skeleton__line--micro"></div>
+                        <div class="ce-skeleton__line ce-skeleton__line--micro"></div>
+                        <div class="ce-skeleton__line ce-skeleton__line--micro"></div>
+                        <div class="ce-skeleton__line ce-skeleton__line--micro"></div>
+                    </div>
+                    <div class="ce-skeleton__body">
+                        <div class="ce-skeleton__line ce-skeleton__line--medium"></div>
+                        <div class="ce-skeleton__line"></div>
+                        <div class="ce-skeleton__line"></div>
+                        <div class="ce-skeleton__line ce-skeleton__line--short"></div>
+                        <div class="ce-skeleton__line ce-skeleton__line--block"></div>
+                        <div class="ce-skeleton__line"></div>
+                        <div class="ce-skeleton__line ce-skeleton__line--medium"></div>
+                    </div>
                 </div>
-                <div class="ce-skeleton__toolbar">
-                    <div class="ce-skeleton__line ce-skeleton__line--micro"></div>
-                    <div class="ce-skeleton__line ce-skeleton__line--micro"></div>
-                    <div class="ce-skeleton__line ce-skeleton__line--micro"></div>
-                    <div class="ce-skeleton__line ce-skeleton__line--micro"></div>
-                </div>
-                <div class="ce-skeleton__body">
-                    <div class="ce-skeleton__line ce-skeleton__line--medium"></div>
-                    <div class="ce-skeleton__line"></div>
-                    <div class="ce-skeleton__line"></div>
-                    <div class="ce-skeleton__line ce-skeleton__line--short"></div>
-                    <div class="ce-skeleton__line ce-skeleton__line--block"></div>
-                    <div class="ce-skeleton__line"></div>
-                    <div class="ce-skeleton__line ce-skeleton__line--medium"></div>
-                </div>
-            </div>
             <?php endif; ?>
 
             <?php if ($draft === null): ?>
@@ -379,7 +379,10 @@ $jsonScript = static fn(mixed $value): string => (string) json_encode(
         </script>
     <?php else: ?>
         <script type="application/json" id="contentDraftSnapshot">
-            {"sections":[],"references":[]}
+            {
+                "sections": [],
+                "references": []
+            }
         </script>
     <?php endif; ?>
     <script type="application/json" id="contentRevisionHistory">

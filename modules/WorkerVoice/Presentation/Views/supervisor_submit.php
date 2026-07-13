@@ -17,9 +17,11 @@ $breadcrumbs = [
 require $v2Root . '/shared/Views/Partials/page_header.php';
 ?>
 
-<div class="container-xxl flex-grow-1 py-4" id="supervisorFeedbackSubmitPage" data-requires-organization-scope="true" data-organization-uuid="<?= htmlspecialchars((string) ($organizationUuid ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+<div class="py-4" id="supervisorFeedbackSubmitPage" data-requires-organization-scope="true" data-organization-uuid="<?= htmlspecialchars((string) ($organizationUuid ?? ''), ENT_QUOTES, 'UTF-8') ?>">
     <div class="card">
-        <div class="card-header"><h5 class="card-title mb-1">Supervisor Observation</h5></div>
+        <div class="card-header">
+            <h5 class="card-title mb-1">Supervisor Observation</h5>
+        </div>
         <div class="card-body">
             <form id="supervisorFeedbackForm" class="row g-3">
                 <div class="col-md-12">

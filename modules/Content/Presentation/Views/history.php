@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /** @var array<string, mixed> $page */
@@ -24,7 +25,7 @@ $pageScripts = ['js/modules/content-history.js'];
 require $v2Root . '/shared/Views/Partials/page_header.php';
 ?>
 
-<div class="container-xxl flex-grow-1 py-4" id="contentHistoryPage" data-page-uuid="<?= htmlspecialchars((string) ($page['pageUuid'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+<div class="py-4" id="contentHistoryPage" data-page-uuid="<?= htmlspecialchars((string) ($page['pageUuid'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
     <div class="card" id="contentHistoryCard" style="border-radius: var(--we-radius-lg); box-shadow: var(--we-shadow-sm)">
         <div class="card-header d-flex align-items-center justify-content-between gap-3">
             <div>

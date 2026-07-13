@@ -16,7 +16,7 @@ $breadcrumbs = [
 require $v2Root . '/shared/Views/Partials/page_header.php';
 ?>
 
-<div class="container-xxl flex-grow-1 py-4" id="workerVoiceIndexPage">
+<div class="py-4" id="workerVoiceIndexPage">
     <div id="workerVoiceIndexAlert"></div>
     <div class="card" id="workerVoiceTableCard" style="border-radius: var(--we-radius-lg); box-shadow: var(--we-shadow-sm);">
         <div class="card-header">

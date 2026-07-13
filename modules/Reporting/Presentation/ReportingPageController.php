@@ -68,7 +68,10 @@ final class ReportingPageController
         return $this->views->render(
             'modules/Reporting/Presentation/Views/Impact-tracker/index.php',
             'Reporting',
-            $this->pageData->impactTracker($ctx, $this->pilotFilters($request)),
+            array_replace(
+                $this->pageData->impactTracker($ctx, $this->pilotFilters($request)),
+                ['pageScripts' => ['js/modules/impact-tracker.js']],
+            ),
         );
     }
 

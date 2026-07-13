@@ -27,18 +27,6 @@
         </div>
     </div>
 
-    <div class="section-title">Applied Filters</div>
-    <table class="filter-grid">
-        <tr><td>Industry</td><td><?= htmlspecialchars((string) ($data['filters']['industry'] ?? '')) ?></td></tr>
-        <tr><td>Worksite UUID</td><td><?= htmlspecialchars((string) ($data['filters']['worksiteUuid'] ?? '')) ?></td></tr>
-        <tr><td>Department UUID</td><td><?= htmlspecialchars((string) ($data['filters']['departmentUuid'] ?? '')) ?></td></tr>
-        <tr><td>Job Role UUID</td><td><?= htmlspecialchars((string) ($data['filters']['jobRoleUuid'] ?? '')) ?></td></tr>
-        <tr><td>Body Region</td><td><?= htmlspecialchars((string) ($data['filters']['bodyRegion'] ?? '')) ?></td></tr>
-        <tr><td>From Date</td><td><?= htmlspecialchars((string) ($data['filters']['fromDate'] ?? '')) ?></td></tr>
-        <tr><td>To Date</td><td><?= htmlspecialchars((string) ($data['filters']['toDate'] ?? '')) ?></td></tr>
-        <tr><td>Risk Level</td><td><?= htmlspecialchars((string) ($data['filters']['riskLevel'] ?? '')) ?></td></tr>
-    </table>
-
     <div class="section-title">Implementation Progress</div>
     <table class="metric-grid">
         <tr>

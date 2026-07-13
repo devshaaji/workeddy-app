@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /** @var list<\WorkEddy\Modules\Content\Domain\ContentMedia> $mediaItems */
@@ -24,7 +25,7 @@ $pageScripts = ['js/modules/content-media.js'];
 require $v2Root . '/shared/Views/Partials/page_header.php';
 ?>
 
-<div class="container-xxl flex-grow-1 py-4" id="contentMediaPage">
+<div class="py-4" id="contentMediaPage">
     <div class="card" id="contentMediaCard" style="border-radius: var(--we-radius-lg); box-shadow: var(--we-shadow-sm)">
         <div class="card-header d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
             <div>

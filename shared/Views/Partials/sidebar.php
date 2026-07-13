@@ -244,6 +244,11 @@ $e = static fn(string $v): string => htmlspecialchars($v, ENT_QUOTES, 'UTF-8');
                                 Pilot Summary
                             </a>
                         </li>
+                        <li class="menu-item<?= $activeNav('reporting/impact-tracker') ? ' active' : '' ?>">
+                            <a class="menu-link" href="/reporting/impact-tracker">
+                                Impact Tracker
+                            </a>
+                        </li>
                         <li class="menu-item<?= $activeAny(['modules/Reporting/Presentation/Views/Assessment', '/assessments']) && !$activeAny(['comparison', 'reviewer-queue', 'new-manual', 'video']) ? ' active' : '' ?>">
                             <a class="menu-link" href="/assessments">
                                 Assessment Reports

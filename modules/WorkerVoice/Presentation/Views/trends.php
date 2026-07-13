@@ -17,7 +17,7 @@ $breadcrumbs = [
 require $v2Root . '/shared/Views/Partials/page_header.php';
 ?>
 
-<div class="container-xxl flex-grow-1 py-4" id="workerVoiceTrendsPage" data-requires-organization-scope="true" data-organization-uuid="<?= htmlspecialchars((string) ($organizationUuid ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+<div class="py-4" id="workerVoiceTrendsPage" data-requires-organization-scope="true" data-organization-uuid="<?= htmlspecialchars((string) ($organizationUuid ?? ''), ENT_QUOTES, 'UTF-8') ?>">
     <div id="workerVoiceTrendsAlert"></div>
     <div class="row g-4 mb-4">
         <div class="col-sm-6 col-xl-3">
@@ -158,7 +158,9 @@ require $v2Root . '/shared/Views/Partials/page_header.php';
                             </tr>
                         </thead>
                         <tbody id="workerVoiceBodyRegionTable">
-                            <tr><td colspan="4" class="text-muted">Loading...</td></tr>
+                            <tr>
+                                <td colspan="4" class="text-muted">Loading...</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>

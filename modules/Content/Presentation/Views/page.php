@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /** @var ?\WorkEddy\Modules\Content\Application\DTOs\PublishedContentPage $page */
@@ -49,7 +50,7 @@ if ($page !== null) {
 $emptyMessage = $message ?? 'This content page has not been published yet.';
 ?>
 
-<div class="container-xxl flex-grow-1 py-4 contentManagedPage">
+<div class="py-4 contentManagedPage">
     <div class="card mb-4" style="border-radius: var(--we-radius-lg); box-shadow: var(--we-shadow-sm)">
         <div class="card-body d-flex flex-wrap gap-3 justify-content-between align-items-start">
             <div>

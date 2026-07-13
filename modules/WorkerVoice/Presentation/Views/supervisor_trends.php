@@ -17,7 +17,7 @@ $breadcrumbs = [
 require $v2Root . '/shared/Views/Partials/page_header.php';
 ?>
 
-<div class="container-xxl flex-grow-1 py-4" id="supervisorFeedbackTrendsPage" data-requires-organization-scope="true" data-organization-uuid="<?= htmlspecialchars((string) ($organizationUuid ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+<div class="py-4" id="supervisorFeedbackTrendsPage" data-requires-organization-scope="true" data-organization-uuid="<?= htmlspecialchars((string) ($organizationUuid ?? ''), ENT_QUOTES, 'UTF-8') ?>">
     <div class="card mb-4">
         <div class="card-header">
             <h5 class="card-title mb-1">Filter Trends</h5>
@@ -158,7 +158,9 @@ require $v2Root . '/shared/Views/Partials/page_header.php';
                             </tr>
                         </thead>
                         <tbody id="supervisorTrendDepartmentTable">
-                            <tr><td colspan="3" class="text-muted">Loading...</td></tr>
+                            <tr>
+                                <td colspan="3" class="text-muted">Loading...</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>

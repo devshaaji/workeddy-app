@@ -74,6 +74,24 @@ final class GeneratePdf
         );
     }
 
+    public function generateImpactTrackerPdf(?string $organizationUuid = null, array $filters = [], ?string $previousArtifactUuid = null, ?string $regenerationReason = null): string
+    {
+        $data = $this->snapshots->impactTracker($organizationUuid, $filters);
+        $data = $this->enrichData($data);
+        $html = $this->renderTemplate('impact_tracker', $data);
+
+        return $this->createAndStorePdf(
+            'impact_tracker',
+            $organizationUuid,
+            'impact_tracker_report_' . ($organizationUuid ?? 'global') . '_' . date('Ymd_His') . '.pdf',
+            'impact_tracker',
+            $data,
+            $html,
+            $previousArtifactUuid,
+            $regenerationReason,
+        );
+    }
+
     public function generateAssessmentPdf(string $uuid, ?string $previousArtifactUuid = null, ?string $regenerationReason = null): string
     {
         $data = $this->snapshots->assessmentReport($uuid);
@@ -123,6 +141,7 @@ final class GeneratePdf
             'finance' => $this->generateFinancePdf(),
             'operations' => $this->generateOperationsPdf(),
             'pilot_summary' => $this->generatePilotSummaryPdf($organizationUuid, [], $previousArtifactUuid, $regenerationReason),
+            'impact_tracker' => $this->generateImpactTrackerPdf($organizationUuid, [], $previousArtifactUuid, $regenerationReason),
             'assessment' => $this->generateAssessmentPdf($this->requireSourceUuid($reportType, $sourceUuid), $previousArtifactUuid, $regenerationReason),
             'corrective_action' => $this->generateCorrectiveActionPdf($this->requireSourceUuid($reportType, $sourceUuid), $previousArtifactUuid, $regenerationReason),
             'comparison' => $this->generateComparisonPdf($this->requireSourceUuid($reportType, $sourceUuid), $previousArtifactUuid, $regenerationReason),

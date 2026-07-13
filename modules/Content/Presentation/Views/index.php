@@ -22,7 +22,7 @@ $pageScripts = ['js/modules/content-pages.js'];
 require $v2Root . '/shared/Views/Partials/page_header.php';
 ?>
 
-<div class="container-xxl flex-grow-1 py-4" id="contentPagesIndex">
+<div class="py-4" id="contentPagesIndex">
     <div class="card" id="contentPagesCard" style="border-radius: var(--we-radius-lg); box-shadow: var(--we-shadow-sm)">
         <div class="card-header">
             <div class="row w-full g-2 align-items-center">
