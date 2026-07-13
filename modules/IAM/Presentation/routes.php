@@ -47,6 +47,7 @@ return function (RouteRegistrar $routes): void {
         $web->add('GET', '/profile', [IAMPageController::class, 'profile']);
         $web->add('GET', '/profile/security', [IAMPageController::class, 'profileSecurity']);
         $web->add('GET', '/profile/sessions', [IAMPageController::class, 'profileSessions']);
+        $web->add('GET', '/scope-error', [IAMPageController::class, 'wrongScope']);
         $web->add('GET', '/settings/page', [IAMPageController::class, 'settings']);
     }, ['auth']);
 

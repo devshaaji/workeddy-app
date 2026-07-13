@@ -248,6 +248,8 @@ final class PlatformServiceProvider implements ModuleServiceProviderInterface
                     foreach ($provider->getJobHandlers() as $jobType => $handlerDefinition) {
                         if (is_string($handlerDefinition)) {
                             $handler = $c->get($handlerDefinition);
+                        } elseif (is_callable($handlerDefinition)) {
+                            $handler = $handlerDefinition($c);
                         } else {
                             $handler = $handlerDefinition;
                         }

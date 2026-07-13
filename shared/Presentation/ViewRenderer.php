@@ -104,6 +104,23 @@ final class ViewRenderer
         return $this->render($view, $moduleName, $data, false, $layout);
     }
 
+    public function renderScopeErrorPage(string $message, ?string $organizationName = null, ?string $organizationUuid = null, ?string $suggestedAction = null): Response
+    {
+        return $this->render(
+            '/shared/Views/Errors/wrong_scope.php',
+            'Error',
+            [
+                'pageTitle' => 'Wrong Organization Scope',
+                'message' => $message,
+                'organizationName' => $organizationName,
+                'organizationUuid' => $organizationUuid,
+                'suggestedAction' => $suggestedAction,
+            ],
+            true,
+            'app',
+        );
+    }
+
 
     /**
      * @param array<string, mixed> $data

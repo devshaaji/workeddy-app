@@ -174,6 +174,15 @@ final class IAMPageController
         $vars = $request->routeParams;
         return $this->render('Profile/sessions.php', $vars);
     }
+    public function wrongScope(Request $request): Response
+    {
+        return $this->views->renderScopeErrorPage(
+            (string) ($request->query('message') ?? 'You do not have access to this page in the current organization scope.'),
+            ($request->query('organization') ?? null) !== null ? (string) $request->query('organization') : null,
+            ($request->query('organization_uuid') ?? null) !== null ? (string) $request->query('organization_uuid') : null,
+            ($request->query('action') ?? null) !== null ? (string) $request->query('action') : null,
+        );
+    }
     public function settings(Request $request): Response
     {
         $vars = $request->routeParams;

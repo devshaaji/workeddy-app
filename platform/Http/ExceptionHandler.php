@@ -13,6 +13,7 @@ use WorkEddy\Shared\Exceptions\NotFoundException;
 use WorkEddy\Shared\Exceptions\ServiceUnavailableException;
 use WorkEddy\Shared\Exceptions\TooManyRequestsException;
 use WorkEddy\Shared\Exceptions\ValidationException;
+use WorkEddy\Shared\Exceptions\WrongScopeException;
 use WorkEddy\Shared\Presentation\ViewRenderer;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -58,6 +59,28 @@ final class ExceptionHandler
         }
 
         // Forbidden → 403
+        if ($e instanceof WrongScopeException) {
+            if ($request !== null && !$this->expectsJson($request)) {
+                return $this->views->renderScopeErrorPage(
+                    $e->getMessage(),
+                    $e->organizationName(),
+                    $e->organizationUuid(),
+                    $e->suggestedAction(),
+                );
+            }
+
+            return Response::json([
+                'code' => 'WRONG_SCOPE',
+                'message' => $e->getMessage(),
+                'data' => [
+                    'organizationName' => $e->organizationName(),
+                    'organizationUuid' => $e->organizationUuid(),
+                    'suggestedAction' => $e->suggestedAction(),
+                    'redirectTo' => $this->scopeErrorUrl($e),
+                ],
+            ], 403);
+        }
+
         if ($e instanceof ForbiddenException) {
             if ($request !== null && !$this->expectsJson($request)) {
                 return $this->views->renderErrorPage(403, 'Access denied');
@@ -118,6 +141,21 @@ final class ExceptionHandler
         $contentType = strtolower((string) $request->header('Content-Type', ''));
         return str_contains($contentType, 'json');
     }
+
+    private function scopeErrorUrl(WrongScopeException $e): string
+    {
+        $query = array_filter([
+            'message' => $e->getMessage(),
+            'organization' => $e->organizationName(),
+            'organization_uuid' => $e->organizationUuid(),
+            'action' => $e->suggestedAction(),
+        ], static fn($value): bool => is_string($value) && trim($value) !== '');
+
+        $qs = http_build_query($query);
+
+        return '/scope-error' . ($qs !== '' ? '?' . $qs : '');
+    }
+
     private function log(\Throwable $e, ?Request $request, int $status): void
     {
         $context = [

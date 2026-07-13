@@ -334,6 +334,13 @@
     }).join('');
   }
 
+  function renderRecommendationsPlaceholder(title, subtitle) {
+    var body = qs('#caRecommendationsBody');
+    if (!body) { return; }
+    text('#caRecommendationCount', state.recommendations.length + ' recommendations');
+    body.innerHTML = emptyRow(6, title, subtitle);
+  }
+
   function toggleEvidenceTypeCheckboxes(rootSelector, values) {
     var allowed = {};
     (values || []).forEach(function (value) { allowed[String(value)] = true; });
@@ -663,9 +670,33 @@
       if (action === 'open-assign') { openAssign(uuid); }
     });
 
-    Promise.all([loadAssessments(), loadUsers()]).catch(function (error) {
-      App.notify.error(error.message || 'Could not prepare recommendation review workspace.');
-    });
+    Promise.all([loadAssessments(), loadUsers()])
+      .then(function () {
+        if (!state.assessments.length) {
+          renderRecommendationsPlaceholder(
+            'No reviewed assessments available',
+            'Review or lock an assessment before generating corrective action recommendations.'
+          );
+          return;
+        }
+
+        if (currentAssessmentUuid()) {
+          loadRecommendations(false);
+          return;
+        }
+
+        renderRecommendationsPlaceholder(
+          'Select a reviewed assessment',
+          'Choose an assessment above to load or generate corrective action recommendations.'
+        );
+      })
+      .catch(function (error) {
+        renderRecommendationsPlaceholder(
+          'Recommendations unavailable',
+          'The workspace could not be prepared. Check assessment and organization access, then refresh.'
+        );
+        App.notify.error(error.message || 'Could not prepare recommendation review workspace.');
+      });
   }
 
   function bindShowPage() {

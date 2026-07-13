@@ -36,6 +36,8 @@ final class ServiceProvider implements ModuleServiceProviderInterface
             IPilotSiteRepository::class => \DI\autowire(PilotSiteRepository::class),
             IDepartmentRepository::class => \DI\autowire(DepartmentRepository::class),
             IJobRoleRepository::class => \DI\autowire(JobRoleRepository::class),
+            \WorkEddy\Modules\Organization\Presentation\OrganizationController::class => \DI\autowire(),
+            \WorkEddy\Modules\Organization\Presentation\OrganizationPageController::class => \DI\autowire(),
             \WorkEddy\Modules\Organization\Application\CreateOrganizationUseCase::class => \DI\autowire(),
             \WorkEddy\Modules\Organization\Application\UpdateOrganizationStatusUseCase::class => \DI\autowire(),
             \WorkEddy\Modules\Organization\Application\InviteOrganizationMemberUseCase::class => \DI\autowire(),

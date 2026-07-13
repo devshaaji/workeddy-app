@@ -14,6 +14,7 @@ use WorkEddy\Modules\Privacy\Authorization\PrivacyPermissions;
 use WorkEddy\Modules\Reporting\Authorization\ReportingPermissions;
 use WorkEddy\Platform\Session\UserContext;
 use WorkEddy\Shared\Exceptions\NotFoundException;
+use WorkEddy\Shared\Exceptions\WrongScopeException;
 use WorkEddy\Shared\Support\UuidSupport;
 
 final class GetAssessmentUseCase
@@ -33,8 +34,11 @@ final class GetAssessmentUseCase
         $this->permissions->requirePrivilege($actor, AssessmentPermissions::VIEW);
 
         $assessment = $this->assessments->findByUuid(UuidSupport::requireValid($assessmentUuid, 'assessmentUuid'));
-        if ($assessment === null || ($actor->organizationId !== null && $actor->organizationId !== $assessment->getOrganizationId())) {
+        if ($assessment === null) {
             throw new NotFoundException('Assessment not found.');
+        }
+        if ($actor->organizationId !== null && $actor->organizationId !== $assessment->getOrganizationId()) {
+            throw new WrongScopeException('This assessment belongs to a different organization scope.');
         }
 
         $view = $assessment->toView();

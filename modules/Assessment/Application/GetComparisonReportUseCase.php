@@ -9,6 +9,7 @@ use WorkEddy\Modules\Assessment\Domain\Contracts\IAssessmentRepository;
 use WorkEddy\Modules\IAM\Domain\Contracts\IPermissionService;
 use WorkEddy\Platform\Session\UserContext;
 use WorkEddy\Shared\Exceptions\NotFoundException;
+use WorkEddy\Shared\Exceptions\WrongScopeException;
 use WorkEddy\Shared\Support\UuidSupport;
 
 final class GetComparisonReportUseCase
@@ -23,8 +24,11 @@ final class GetComparisonReportUseCase
     {
         $this->permissions->requirePrivilege($actor, AssessmentPermissions::VIEW_COMPARISON);
         $report = $this->assessments->findComparisonReportByUuid(UuidSupport::requireValid($comparisonReportUuid, 'comparisonReportUuid'));
-        if ($report === null || ($actor->organizationId !== null && $actor->organizationId !== $report->organizationId)) {
+        if ($report === null) {
             throw new NotFoundException('Comparison report not found.');
+        }
+        if ($actor->organizationId !== null && $actor->organizationId !== $report->organizationId) {
+            throw new WrongScopeException('This comparison report belongs to a different organization scope.');
         }
 
         return $report->toView();

@@ -239,6 +239,22 @@
         return _normalise(res);
       })
       .then(function (result) {
+        if (result && result.code === 'WRONG_SCOPE' && !opts.skipWrongScopeRedirect) {
+          var wrongScopeTarget = result.data && typeof result.data.redirectTo === 'string' && result.data.redirectTo
+            ? result.data.redirectTo
+            : '/scope-error';
+          var wrongScopeUrl = null;
+          try {
+            wrongScopeUrl = new URL(wrongScopeTarget, window.location.origin);
+          } catch (_) {
+            wrongScopeUrl = null;
+          }
+          if (!wrongScopeUrl || wrongScopeUrl.pathname !== window.location.pathname || window.location.search !== wrongScopeUrl.search) {
+            window.location.assign(wrongScopeTarget);
+            return new Promise(function () { });
+          }
+        }
+
         if (config.debug && result && result.status) {
           console.log('[App.api] Response', result.status, result);
         }

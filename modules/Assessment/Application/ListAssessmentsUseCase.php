@@ -10,6 +10,7 @@ use WorkEddy\Modules\IAM\Domain\Contracts\IPermissionService;
 use WorkEddy\Modules\Organization\Domain\Contracts\IOrganizationRepository;
 use WorkEddy\Platform\Session\UserContext;
 use WorkEddy\Shared\Exceptions\NotFoundException;
+use WorkEddy\Shared\Exceptions\WrongScopeException;
 use WorkEddy\Shared\Support\UuidSupport;
 
 final class ListAssessmentsUseCase
@@ -31,8 +32,15 @@ final class ListAssessmentsUseCase
             $organizationId = null;
         } else {
             $organization = $this->organizations->findByUuid(UuidSupport::requireValid($organizationUuid, 'organizationUuid'));
-            if ($organization === null || $organization->getId() === null || ($actor->organizationId !== null && $actor->organizationId !== $organization->getId())) {
+            if ($organization === null || $organization->getId() === null) {
                 throw new NotFoundException('Organization not found.');
+            }
+            if ($actor->organizationId !== null && $actor->organizationId !== $organization->getId()) {
+                throw new WrongScopeException(
+                    'These assessments belong to a different organization than the one currently selected.',
+                    $organization->getName(),
+                    $organization->getUuid(),
+                );
             }
             $organizationId = (int) $organization->getId();
         }

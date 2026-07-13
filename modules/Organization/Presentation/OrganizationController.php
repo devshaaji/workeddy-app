@@ -35,6 +35,7 @@ use WorkEddy\Platform\Audit\IAuditService;
 use WorkEddy\Platform\Session\ISessionService;
 use WorkEddy\Platform\Session\UserContext;
 use WorkEddy\Shared\Exceptions\NotFoundException;
+use WorkEddy\Shared\Exceptions\WrongScopeException;
 
 final class OrganizationController
 {
@@ -58,12 +59,12 @@ final class OrganizationController
         private readonly IPermissionService $permissions,
         private readonly IAuditService $audit,
         private readonly ISessionService $session,
-        private readonly ?IWorksiteRepository $worksites = null,
-        private readonly ?IDepartmentRepository $departments = null,
-        private readonly ?IJobRoleRepository $jobRoles = null,
-        private readonly ?IOrganizationMembershipRepository $memberships = null,
-        private readonly ?IUserRepository $users = null,
-        private readonly ?IRoleRepository $roles = null,
+        private readonly IWorksiteRepository $worksites,
+        private readonly IDepartmentRepository $departments,
+        private readonly IJobRoleRepository $jobRoles,
+        private readonly IOrganizationMembershipRepository $memberships,
+        private readonly IUserRepository $users,
+        private readonly IRoleRepository $roles,
     ) {}
 
     public function list(Request $request): Response
@@ -246,8 +247,11 @@ final class OrganizationController
         $organization = $this->requireOrganization((string) ($request->routeParam('id') ?? ''), $ctx);
         $memberships = $this->requireMemberships();
         $membership = $memberships->findByUuid((string) ($request->routeParam('memberId') ?? ''));
-        if ($membership === null || $membership->getOrganizationId() !== $organization->getId()) {
+        if ($membership === null) {
             throw new NotFoundException('Organization member not found.');
+        }
+        if ($membership->getOrganizationId() !== $organization->getId()) {
+            throw new WrongScopeException('This organization member belongs to a different organization scope.');
         }
         $before = $this->serializeMembership($membership);
         $body = $this->requestData($request);
@@ -273,8 +277,11 @@ final class OrganizationController
         $organization = $this->requireOrganization((string) ($request->routeParam('id') ?? ''), $ctx);
         $memberships = $this->requireMemberships();
         $membership = $memberships->findByUuid((string) ($request->routeParam('memberId') ?? ''));
-        if ($membership === null || $membership->getOrganizationId() !== $organization->getId()) {
+        if ($membership === null) {
             throw new NotFoundException('Organization member not found.');
+        }
+        if ($membership->getOrganizationId() !== $organization->getId()) {
+            throw new WrongScopeException('This organization member belongs to a different organization scope.');
         }
         $before = $this->serializeMembership($membership);
         $memberships->delete($membership->getUuid());
@@ -329,8 +336,11 @@ final class OrganizationController
         $this->permissions->requirePrivilege($ctx, OrganizationPermissions::VIEW);
         $organization = $this->requireOrganization((string) ($request->routeParam('id') ?? ''), $ctx);
         $worksite = $this->requireWorksites()->findByUuid((string) ($request->routeParam('worksiteId') ?? ''));
-        if ($worksite === null || $worksite->getOrganizationId() !== $organization->getId()) {
+        if ($worksite === null) {
             throw new NotFoundException('Worksite not found.');
+        }
+        if ($worksite->getOrganizationId() !== $organization->getId()) {
+            throw new WrongScopeException('This worksite belongs to a different organization scope.');
         }
 
         return Response::json(['status' => 'ok', 'data' => [
@@ -349,8 +359,11 @@ final class OrganizationController
         $organization = $this->requireOrganization((string) ($request->routeParam('id') ?? ''), $ctx);
         $repo = $this->requireWorksites();
         $worksite = $repo->findByUuid((string) ($request->routeParam('worksiteId') ?? ''));
-        if ($worksite === null || $worksite->getOrganizationId() !== $organization->getId()) {
+        if ($worksite === null) {
             throw new NotFoundException('Worksite not found.');
+        }
+        if ($worksite->getOrganizationId() !== $organization->getId()) {
+            throw new WrongScopeException('This worksite belongs to a different organization scope.');
         }
         $before = $this->serializeWorksite($worksite, $organization->getUuid());
         $repo->delete($worksite->getUuid());
@@ -458,8 +471,11 @@ final class OrganizationController
         $this->permissions->requirePrivilege($ctx, OrganizationPermissions::VIEW);
         $organization = $this->requireOrganization((string) ($request->routeParam('id') ?? ''), $ctx);
         $department = $this->requireDepartments()->findByUuid((string) ($request->routeParam('departmentId') ?? ''));
-        if ($department === null || $department->getOrganizationId() !== $organization->getId()) {
+        if ($department === null) {
             throw new NotFoundException('Department not found.');
+        }
+        if ($department->getOrganizationId() !== $organization->getId()) {
+            throw new WrongScopeException('This department belongs to a different organization scope.');
         }
 
         return Response::json(['status' => 'ok', 'data' => [
@@ -479,8 +495,11 @@ final class OrganizationController
         $organization = $this->requireOrganization((string) ($request->routeParam('id') ?? ''), $ctx);
         $repo = $this->requireDepartments();
         $department = $repo->findByUuid((string) ($request->routeParam('departmentId') ?? ''));
-        if ($department === null || $department->getOrganizationId() !== $organization->getId()) {
+        if ($department === null) {
             throw new NotFoundException('Department not found.');
+        }
+        if ($department->getOrganizationId() !== $organization->getId()) {
+            throw new WrongScopeException('This department belongs to a different organization scope.');
         }
         $before = $this->serializeDepartment($department, $organization->getUuid());
         $repo->delete($department->getUuid());
@@ -535,8 +554,11 @@ final class OrganizationController
         $this->permissions->requirePrivilege($ctx, OrganizationPermissions::VIEW);
         $organization = $this->requireOrganization((string) ($request->routeParam('id') ?? ''), $ctx);
         $jobRole = $this->requireJobRoles()->findByUuid((string) ($request->routeParam('jobRoleId') ?? ''));
-        if ($jobRole === null || $jobRole->getOrganizationId() !== $organization->getId()) {
+        if ($jobRole === null) {
             throw new NotFoundException('Job role not found.');
+        }
+        if ($jobRole->getOrganizationId() !== $organization->getId()) {
+            throw new WrongScopeException('This job role belongs to a different organization scope.');
         }
 
         return Response::json(['status' => 'ok', 'data' => [
@@ -555,8 +577,11 @@ final class OrganizationController
         $organization = $this->requireOrganization((string) ($request->routeParam('id') ?? ''), $ctx);
         $repo = $this->requireJobRoles();
         $jobRole = $repo->findByUuid((string) ($request->routeParam('jobRoleId') ?? ''));
-        if ($jobRole === null || $jobRole->getOrganizationId() !== $organization->getId()) {
+        if ($jobRole === null) {
             throw new NotFoundException('Job role not found.');
+        }
+        if ($jobRole->getOrganizationId() !== $organization->getId()) {
+            throw new WrongScopeException('This job role belongs to a different organization scope.');
         }
         $before = $this->serializeJobRole($jobRole, $organization->getUuid());
         $repo->delete($jobRole->getUuid());
@@ -586,8 +611,15 @@ final class OrganizationController
     private function requireOrganization(string $organizationUuid, UserContext $ctx): Organization
     {
         $organization = $this->organizations->findByUuid($organizationUuid);
-        if ($organization === null || ($ctx->organizationId !== null && $ctx->organizationId !== $organization->getId())) {
+        if ($organization === null) {
             throw new NotFoundException('Organization not found.');
+        }
+        if ($ctx->organizationId !== null && $ctx->organizationId !== $organization->getId()) {
+            throw new WrongScopeException(
+                'This page belongs to a different organization than the one currently selected.',
+                $organization->getName(),
+                $organization->getUuid(),
+            );
         }
 
         return $organization;
@@ -683,31 +715,31 @@ final class OrganizationController
 
     private function requireWorksites(): IWorksiteRepository
     {
-        return $this->worksites ?? throw new \RuntimeException('Worksite repository is not configured.');
+        return $this->worksites;
     }
 
     private function requireDepartments(): IDepartmentRepository
     {
-        return $this->departments ?? throw new \RuntimeException('Department repository is not configured.');
+        return $this->departments;
     }
 
     private function requireJobRoles(): IJobRoleRepository
     {
-        return $this->jobRoles ?? throw new \RuntimeException('Job role repository is not configured.');
+        return $this->jobRoles;
     }
 
     private function requireMemberships(): IOrganizationMembershipRepository
     {
-        return $this->memberships ?? throw new \RuntimeException('Organization membership repository is not configured.');
+        return $this->memberships;
     }
 
     private function requireUsers(): IUserRepository
     {
-        return $this->users ?? throw new \RuntimeException('User repository is not configured.');
+        return $this->users;
     }
 
     private function requireRoles(): IRoleRepository
     {
-        return $this->roles ?? throw new \RuntimeException('Role repository is not configured.');
+        return $this->roles;
     }
 }

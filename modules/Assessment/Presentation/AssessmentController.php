@@ -25,6 +25,7 @@ use WorkEddy\Platform\Http\Response;
 use WorkEddy\Platform\Session\ISessionService;
 use WorkEddy\Platform\Session\UserContext;
 use WorkEddy\Shared\Exceptions\AuthenticationException;
+use WorkEddy\Shared\Exceptions\WrongScopeException;
 
 final class AssessmentController
 {
@@ -79,7 +80,7 @@ final class AssessmentController
 
         $organizationUuid = (string) ($request->routeParam('id') ?? '');
         if ($organizationUuid !== '' && $organizationUuid !== ($data['organizationUuid'] ?? null)) {
-            throw new \WorkEddy\Shared\Exceptions\NotFoundException('Assessment not found.');
+            throw new WrongScopeException('This assessment belongs to a different organization scope.', organizationUuid: (string) ($data['organizationUuid'] ?? ''));
         }
 
         return Response::json(['status' => 'ok', 'data' => $data]);

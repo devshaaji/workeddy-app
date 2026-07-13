@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace WorkEddy\Modules\CorrectiveAction\Presentation;
 
 use WorkEddy\Modules\CorrectiveAction\Authorization\CorrectiveActionPermissions;
-use WorkEddy\Modules\CorrectiveAction\Domain\CorrectiveAction;
 use WorkEddy\Shared\Exceptions\AuthenticationException;
 use WorkEddy\Platform\Session\ISessionService;
 use WorkEddy\Modules\IAM\Domain\Contracts\IPermissionService;
@@ -23,35 +22,47 @@ final class CorrectiveActionPageController
     ) {}
     public function recommendations(Request $request): Response
     {
-        unset($request);
-        $ctx = $this->requirePrivilege(CorrectiveActionPermissions::REVIEW_RECOMMENDATIONS);
-        return $this->render('recommendations.php', [$ctx]);
+        return $this->render(
+            'recommendations.php',
+            $request,
+            $this->requirePrivilege(CorrectiveActionPermissions::REVIEW_RECOMMENDATIONS),
+        );
     }
 
     public function controls(Request $request): Response
     {
-        unset($request);
-        $ctx = $this->requirePrivilege(CorrectiveActionPermissions::MANAGE_LIBRARY);
-        return $this->render('controls.php', [$ctx]);
+        return $this->render(
+            'controls.php',
+            $request,
+            $this->requirePrivilege(CorrectiveActionPermissions::MANAGE_LIBRARY),
+        );
     }
 
     public function actions(Request $request): Response
     {
-        unset($request);
-        $ctx = $this->requirePrivilege(CorrectiveActionPermissions::VIEW);
-        return $this->render('actions.php', [$ctx]);
+        return $this->render(
+            'actions.php',
+            $request,
+            $this->requirePrivilege(CorrectiveActionPermissions::VIEW),
+        );
     }
 
     public function show(Request $request): Response
     {
-        $ctx = $this->requirePrivilege(CorrectiveActionPermissions::VIEW);
-        return $this->render('action_show.php', ['actionId' => $request->routeParam('actionId')]);
+        return $this->render(
+            'action_show.php',
+            $request,
+            $this->requirePrivilege(CorrectiveActionPermissions::VIEW),
+        );
     }
 
     public function evidence(Request $request): Response
     {
-        $ctx = $this->requirePrivilege(CorrectiveActionPermissions::VIEW);
-        return $this->render('evidence.php', ['actionId' => $request->routeParam('actionId')]);
+        return $this->render(
+            'evidence.php',
+            $request,
+            $this->requirePrivilege(CorrectiveActionPermissions::VIEW),
+        );
     }
 
 
@@ -73,14 +84,18 @@ final class CorrectiveActionPageController
         return $ctx;
     }
 
-    private function render(string $view, array $vars): Response
+    private function render(string $view, Request $request, UserContext $ctx, array $extra = []): Response
     {
         return $this->views->render(
             'modules/CorrectiveAction/Presentation/Views/' . $view,
             'CorrectiveAction',
-            [
-                'routeParams' => $vars,
-            ],
+            array_replace(
+                [
+                    'routeParams' => $request->routeParams,
+                    'query' => $request->query,
+                ],
+                $extra,
+            ),
         );
     }
 }
