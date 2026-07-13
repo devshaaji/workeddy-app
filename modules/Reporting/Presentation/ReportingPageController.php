@@ -60,6 +60,18 @@ final class ReportingPageController
         );
     }
 
+    public function impactTracker(Request $request): Response
+    {
+        $ctx = $this->requireContext();
+        $this->permissions->requirePrivilege($ctx, ReportingPermissions::VIEW);
+
+        return $this->views->render(
+            'modules/Reporting/Presentation/Views/Impact-tracker/index.php',
+            'Reporting',
+            $this->pageData->impactTracker($ctx, $this->pilotFilters($request)),
+        );
+    }
+
     public function assessment(Request $request): Response
     {
         $ctx = $this->requireContext();

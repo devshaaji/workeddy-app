@@ -1,8 +1,8 @@
 /**
- * task-show.js — Task detail page
+ * task-show.js - Task detail page
  * Routes: GET /tasks/{taskId}
- * API:    GET /api/v1/organizations/{id}/tasks/{taskId}
- *         PUT /api/v1/organizations/{id}/tasks/{taskId}
+ * API:    GET /api/v1/tasks/{taskId}
+ *         PUT /api/v1/tasks/{taskId}
  */
 (function () {
     'use strict';
@@ -13,14 +13,11 @@
     if (!page) { return; }
 
     var taskId = page.getAttribute('data-task-id') || '';
-    var orgId  = page.getAttribute('data-org-id') || '';
-    var apiBase = page.getAttribute('data-api-base') || ('/api/v1/organizations/' + orgId + '/tasks/' + taskId);
-    var assessmentsApi = page.getAttribute('data-assessments-api') || ('/api/v1/organizations/' + orgId + '/assessments');
+    var orgId = page.getAttribute('data-org-id') || '';
+    var apiBase = page.getAttribute('data-api-base') || ('/api/v1/tasks/' + taskId);
+    var assessmentsApi = '';
     var feedbackApi = page.getAttribute('data-feedback-api') || '/api/v1/worker-feedback';
     var caApi = page.getAttribute('data-ca-api') || '/api/v1/corrective-actions';
-    var worksitesApi = '/api/v1/organizations/' + orgId + '/worksites';
-    var departmentsApi = '/api/v1/organizations/' + orgId + '/departments';
-    var jobRolesApi = '/api/v1/organizations/' + orgId + '/job-roles';
 
     var worksiteMap = {};
     var departmentMap = {};
@@ -28,7 +25,27 @@
 
     function e(v) { return App.utils.escapeHtml(v === null || v === undefined ? '' : String(v)); }
 
-    function loadLookups(callback) {
+    function buildOrganizationApi(orgUuid, resource) {
+        if (!orgUuid) { return ''; }
+        return '/api/v1/organizations/' + encodeURIComponent(orgUuid) + '/' + resource;
+    }
+
+    function resetLookups() {
+        worksiteMap = {};
+        departmentMap = {};
+        jobRoleMap = {};
+    }
+
+    function loadLookups(orgUuid, callback) {
+        resetLookups();
+        if (!orgUuid) {
+            if (callback) { callback(); }
+            return;
+        }
+
+        var worksitesApi = buildOrganizationApi(orgUuid, 'worksites');
+        var departmentsApi = buildOrganizationApi(orgUuid, 'departments');
+        var jobRolesApi = buildOrganizationApi(orgUuid, 'job-roles');
         var loaded = 0;
         var total = 3;
 
@@ -59,6 +76,48 @@
         }).catch(function () { checkDone(); });
     }
 
+    function renderTask(d) {
+        App.utils.setText('#task-name-display', d.name || '-');
+        App.utils.setText('#task-code-display', d.taskCode || '-');
+        App.utils.setText('#task-created-display', d.createdAt ? App.utils.formatDate(d.createdAt) : '-');
+        App.utils.setText('#task-description-display', d.description || 'No description provided.');
+
+        var badge = document.getElementById('task-status-badge');
+        if (badge) { badge.innerHTML = App.ui.statusBadge(d.status); }
+
+        var wsName = d.worksiteId && worksiteMap[d.worksiteId] ? worksiteMap[d.worksiteId] : 'Not set';
+        var deptName = d.departmentId && departmentMap[d.departmentId] ? departmentMap[d.departmentId] : 'Not set';
+        var roleName = d.jobRoleId && jobRoleMap[d.jobRoleId] ? jobRoleMap[d.jobRoleId] : 'Not set';
+
+        App.utils.setText('#task-worksite-display', wsName);
+        App.utils.setText('#task-dept-display', deptName);
+        App.utils.setText('#task-role-display', roleName);
+        App.utils.setText('#task-model-display', (d.assessmentModel || 'reba').toUpperCase());
+        App.utils.setText('#task-input-support-display', d.supportsVideo ? 'Manual and video supported' : 'Manual input only');
+
+        var videoBtn = document.getElementById('taskVideoAssessmentLink');
+        if (videoBtn) {
+            if (d.supportsVideo) {
+                videoBtn.classList.remove('disabled');
+                videoBtn.removeAttribute('aria-disabled');
+            } else {
+                videoBtn.classList.add('disabled');
+                videoBtn.setAttribute('aria-disabled', 'true');
+            }
+        }
+
+        var pageVideoBtn = document.getElementById('btnTaskVideoCapture');
+        if (pageVideoBtn) {
+            if (d.supportsVideo) {
+                pageVideoBtn.classList.remove('disabled');
+                pageVideoBtn.removeAttribute('aria-disabled');
+            } else {
+                pageVideoBtn.classList.add('disabled');
+                pageVideoBtn.setAttribute('aria-disabled', 'true');
+            }
+        }
+    }
+
     function loadTask(callback) {
         App.api.get(apiBase).then(function (res) {
             if (!res.ok) {
@@ -66,52 +125,24 @@
                 App.utils.setText('#task-name-display', 'Error loading task');
                 return;
             }
-            var d = res.data;
-            App.utils.setText('#task-name-display', d.name || '—');
-            App.utils.setText('#task-code-display', d.taskCode || '—');
-            App.utils.setText('#task-created-display', d.createdAt ? App.utils.formatDate(d.createdAt) : '—');
-            App.utils.setText('#task-description-display', d.description || 'No description provided.');
 
-            var badge = document.getElementById('task-status-badge');
-            if (badge) { badge.innerHTML = App.ui.statusBadge(d.status); }
+            var d = res.data || {};
+            var taskOrgUuid = d.organizationId || orgId || '';
+            assessmentsApi = buildOrganizationApi(taskOrgUuid, 'assessments');
 
-            // Show related entity names from lookups
-            var wsName = d.worksiteId && worksiteMap[d.worksiteId] ? worksiteMap[d.worksiteId] : 'Not set';
-            var deptName = d.departmentId && departmentMap[d.departmentId] ? departmentMap[d.departmentId] : 'Not set';
-            var roleName = d.jobRoleId && jobRoleMap[d.jobRoleId] ? jobRoleMap[d.jobRoleId] : 'Not set';
-
-            App.utils.setText('#task-worksite-display', wsName);
-            App.utils.setText('#task-dept-display', deptName);
-            App.utils.setText('#task-role-display', roleName);
-            App.utils.setText('#task-model-display', (d.assessmentModel || 'reba').toUpperCase());
-            App.utils.setText('#task-input-support-display', d.supportsVideo ? 'Manual and video supported' : 'Manual input only');
-
-            var videoBtn = document.getElementById('taskVideoAssessmentLink');
-            if (videoBtn) {
-                if (d.supportsVideo) {
-                    videoBtn.classList.remove('disabled');
-                    videoBtn.removeAttribute('aria-disabled');
-                } else {
-                    videoBtn.classList.add('disabled');
-                    videoBtn.setAttribute('aria-disabled', 'true');
-                }
-            }
-            var pageVideoBtn = document.getElementById('btnTaskVideoCapture');
-            if (pageVideoBtn) {
-                if (d.supportsVideo) {
-                    pageVideoBtn.classList.remove('disabled');
-                    pageVideoBtn.removeAttribute('aria-disabled');
-                } else {
-                    pageVideoBtn.classList.add('disabled');
-                    pageVideoBtn.setAttribute('aria-disabled', 'true');
-                }
-            }
-
-            if (callback) { callback(d); }
+            loadLookups(taskOrgUuid, function () {
+                renderTask(d);
+                if (callback) { callback(d); }
+            });
         });
     }
 
     function loadAssessmentCount() {
+        if (!assessmentsApi) {
+            App.utils.setText('#task-assessments-count', 0);
+            return;
+        }
+
         App.api.get(assessmentsApi, { limit: 200 }).then(function (res) {
             if (res.ok && Array.isArray(res.data)) {
                 var count = res.data.filter(function (a) { return a.taskUuid === taskId; }).length;
@@ -137,7 +168,6 @@
         }).catch(function () {});
     }
 
-    // ── Edit Modal ────────────────────────────────────────────────────────
     function populateEditDropdowns(record) {
         var wsSel = document.getElementById('editTaskWorksite');
         if (wsSel) {
@@ -171,10 +201,9 @@
     if (btnEdit) {
         btnEdit.addEventListener('click', function () {
             App.ui.clearAlert('#taskEditAlert');
-            // Load current data into form
             App.api.get(apiBase).then(function (res) {
                 if (!res.ok) { App.notify.error('Failed to load task data.'); return; }
-                var d = res.data;
+                var d = res.data || {};
                 document.getElementById('editTaskName').value = d.name || '';
                 document.getElementById('editTaskCode').value = d.taskCode || '';
                 document.getElementById('editTaskAssessmentModel').value = d.assessmentModel || 'reba';
@@ -200,20 +229,14 @@
                 }
                 App.notify.success('Task updated.');
                 App.modals.close('#taskEditModal');
-                // Reload
-                loadLookups(function () {
-                    loadTask();
-                });
+                loadTask();
             });
         });
     }
 
-    // ── Initialise ────────────────────────────────────────────────────────
-    loadLookups(function () {
-        loadTask(function () {
-            loadAssessmentCount();
-            loadFeedbackCount();
-            loadCaCount();
-        });
+    loadTask(function () {
+        loadAssessmentCount();
+        loadFeedbackCount();
+        loadCaCount();
     });
 })();

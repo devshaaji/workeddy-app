@@ -72,6 +72,7 @@ final class ServiceProvider implements ModuleServiceProviderInterface
                 $c->get(ICacheService::class),
                 $c->has(IAssessmentRepository::class) ? $c->get(IAssessmentRepository::class) : null,
                 $c->has(ICorrectiveActionRepository::class) ? $c->get(ICorrectiveActionRepository::class) : null,
+                $c->get(ReportingSettings::class),
             ),
             ReportingPageData::class => static fn(ContainerInterface $c): ReportingPageData => new ReportingPageData($c->get(ReportingSnapshotService::class)),
             ReportingPageController::class => static fn(ContainerInterface $c): ReportingPageController => new ReportingPageController(

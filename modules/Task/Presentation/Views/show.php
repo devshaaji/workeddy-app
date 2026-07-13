@@ -23,8 +23,7 @@ $eOrgId = htmlspecialchars((string) ($organizationUuid ?? ''), ENT_QUOTES, 'UTF-
 <div id="taskShowPage"
     data-task-id="<?= $eTaskId ?>"
     data-org-id="<?= $eOrgId ?>"
-    data-api-base="/api/v1/organizations/<?= $eOrgId ?>/tasks/<?= $eTaskId ?>"
-    data-assessments-api="/api/v1/organizations/<?= $eOrgId ?>/assessments"
+    data-api-base="/api/v1/tasks/<?= $eTaskId ?>"
     data-feedback-api="/api/v1/worker-feedback"
     data-ca-api="/api/v1/corrective-actions">
 

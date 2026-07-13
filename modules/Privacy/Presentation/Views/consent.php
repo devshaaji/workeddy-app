@@ -17,7 +17,7 @@ $pageScripts = ['js/modules/privacy.js'];
 require $v2Root . '/shared/Views/Partials/page_header.php';
 ?>
 
-<div class="container-xxl flex-grow-1 py-4" id="privacyConsentPage">
+<div class="container-xxl flex-grow-1 py-4" id="privacyConsentPage" data-requires-organization-scope="true">
     <!-- User context -->
     <div class="d-flex justify-content-end mb-3">
         <span class="badge bg-label-secondary d-inline-flex align-items-center gap-1 px-3 py-2" style="border-radius: var(--we-radius); font-weight: 400;">

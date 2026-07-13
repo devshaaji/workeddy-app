@@ -57,6 +57,7 @@ $bodyRegionFallback = ['Neck', 'Shoulders', 'Upper Back', 'Lower Back', 'Elbows'
 <div
     class="container-xxl flex-grow-1 pb-4"
     id="pilotSummaryPage"
+    data-requires-organization-scope="true"
     data-organization-uuid="<?= $e($organizationUuid ?? '') ?>">
 
     <!-- Hero summary card -->

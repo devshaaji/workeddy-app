@@ -2160,6 +2160,45 @@
     }
   });
 
+  function _buildWrongScopeRedirect(message, action) {
+    var target = new URL('/scope-error', window.location.origin);
+    if (message) {
+      target.searchParams.set('message', message);
+    }
+    if (action) {
+      target.searchParams.set('action', action);
+    }
+    return target.pathname + target.search;
+  }
+
+  function _pageRequiresOrganizationScope() {
+    return !!document.querySelector('[data-requires-organization-scope="true"], [data-organization-uuid], [data-org-id]');
+  }
+
+  function _resolveTenantSwitchUrl(nextOrganizationUuid) {
+    var current = new URL(window.location.href);
+    var match = current.pathname.match(/^\/organizations\/([0-9a-fA-F-]{36})(\/.*)?$/);
+    if (!match) {
+      if (!nextOrganizationUuid && _pageRequiresOrganizationScope()) {
+        return _buildWrongScopeRedirect(
+          'This page requires an organization scope, but your current scope is not tied to an organization.',
+          'Switch to an organization scope or open a platform page instead.'
+        );
+      }
+      return current.pathname + current.search + current.hash;
+    }
+
+    if (!nextOrganizationUuid) {
+      return _buildWrongScopeRedirect(
+        'This page requires an organization scope, but your current scope is not tied to an organization.',
+        'Switch to an organization scope or open a platform page instead.'
+      );
+    }
+
+    var suffix = match[2] || '';
+    return '/organizations/' + encodeURIComponent(nextOrganizationUuid) + suffix + current.search + current.hash;
+  }
+
   function initTenantSwitcher() {
     var wrap = document.getElementById('tenantSwitcherWrap');
     var select = document.getElementById('tenantSwitcherSelect');
@@ -2206,6 +2245,7 @@
             return;
           }
 
+          var nextUrl = _resolveTenantSwitchUrl(response.data && response.data.organizationUuid ? response.data.organizationUuid : '');
           var secondsRemaining = 3;
           var countdownTimer = null;
           if (dialog) {
@@ -2227,7 +2267,7 @@
             secondsRemaining -= 1;
             if (secondsRemaining <= 0) {
               window.clearInterval(countdownTimer);
-              window.location.reload();
+              window.location.assign(nextUrl);
               return;
             }
 

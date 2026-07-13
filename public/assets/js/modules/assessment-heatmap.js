@@ -7,9 +7,7 @@
     }
 
     var assessmentUuid = page.getAttribute('data-assessment-uuid');
-    var orgMeta = document.querySelector('meta[name="org-uuid"]');
-    var organizationUuid = page.getAttribute('data-organization-uuid') || (orgMeta ? orgMeta.content : '') || '';
-    var endpoint = '/api/v1/organizations/' + encodeURIComponent(organizationUuid) + '/assessments/' + encodeURIComponent(assessmentUuid);
+    var endpoint = '/api/v1/assessments/' + encodeURIComponent(assessmentUuid);
     var updateEndpoint = '/api/v1/assessments/' + encodeURIComponent(assessmentUuid);
     var canEdit = false;
     var currentRegions = [];

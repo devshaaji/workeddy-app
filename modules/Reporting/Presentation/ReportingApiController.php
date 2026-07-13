@@ -59,6 +59,21 @@ final class ReportingApiController
         return Response::success($this->snapshots->pilotSummary($context->organizationUuid, $this->pilotFilters($request)));
     }
 
+    public function impactTracker(Request $request): Response
+    {
+        $context = $this->requireContext();
+
+        return Response::success($this->snapshots->impactTracker($context->organizationUuid, $this->pilotFilters($request)));
+    }
+
+    public function downloadImpactTrackerPdf(Request $request): Response
+    {
+        $context = $this->requireContext();
+        $fileUuid = $this->generatePdf->generateImpactTrackerPdf($context->organizationUuid, $this->pilotFilters($request));
+
+        return $this->redirectToSignedAccess($fileUuid, $request);
+    }
+
     public function downloadDashboardPdf(Request $request): Response
     {
         $fileUuid = $this->generatePdf->generateDashboardPdf();

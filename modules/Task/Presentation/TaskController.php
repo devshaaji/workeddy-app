@@ -19,6 +19,7 @@ use WorkEddy\Platform\Session\ISessionService;
 use WorkEddy\Platform\Session\UserContext;
 use WorkEddy\Shared\Exceptions\AuthenticationException;
 use WorkEddy\Shared\Exceptions\NotFoundException;
+use WorkEddy\Shared\Exceptions\WrongScopeException;
 
 final class TaskController
 {
@@ -68,11 +69,7 @@ final class TaskController
     {
         $ctx = $this->requireContext();
         $this->requirePermissions()->requirePrivilege($ctx, TaskPermissions::VIEW);
-        $organization = $this->requireOrganization((string) ($request->routeParam('id') ?? ''), $ctx);
-        $task = $this->requireTasks()->findByUuid((string) ($request->routeParam('taskId') ?? ''));
-        if ($task === null || $task->getOrganizationId() !== $organization->getId()) {
-            throw new NotFoundException('Task not found.');
-        }
+        $task = $this->resolveTaskForRequest((string) ($request->routeParam('taskId') ?? ''), (string) ($request->routeParam('id') ?? ''), $ctx);
 
         return Response::json(['status' => 'ok', 'data' => $this->serializeTask($task)]);
     }
@@ -81,10 +78,11 @@ final class TaskController
     {
         $ctx = $this->requireContext();
         $body = $this->requestData($request);
+        $task = $this->resolveTaskForRequest((string) ($request->routeParam('taskId') ?? ''), (string) ($request->routeParam('id') ?? ''), $ctx);
 
         return Response::json(['status' => 'ok', 'data' => $this->updateTask->execute(
-            organizationUuid: (string) ($request->routeParam('id') ?? ''),
-            taskUuid: (string) ($request->routeParam('taskId') ?? ''),
+            organizationUuid: $this->organizationUuidForTask($task),
+            taskUuid: $task->getUuid(),
             actor: $ctx,
             name: (string) ($body['name'] ?? ''),
             status: isset($body['status']) ? (string) $body['status'] : null,
@@ -101,12 +99,8 @@ final class TaskController
     {
         $ctx = $this->requireContext();
         $this->requirePermissions()->requirePrivilege($ctx, TaskPermissions::UPDATE);
-        $organization = $this->requireOrganization((string) ($request->routeParam('id') ?? ''), $ctx);
         $tasks = $this->requireTasks();
-        $task = $tasks->findByUuid((string) ($request->routeParam('taskId') ?? ''));
-        if ($task === null || $task->getOrganizationId() !== $organization->getId()) {
-            throw new NotFoundException('Task not found.');
-        }
+        $task = $this->resolveTaskForRequest((string) ($request->routeParam('taskId') ?? ''), (string) ($request->routeParam('id') ?? ''), $ctx);
         $before = $this->serializeTask($task);
         $tasks->delete($task->getUuid());
         $this->audit->record('task.deleted', 'task', $task->getUuid(), beforeState: $before, afterState: ['id' => $task->getUuid(), 'deleted' => true], actorId: (string) $ctx->userId, actorType: 'user');
@@ -156,6 +150,38 @@ final class TaskController
         }
 
         return $organization;
+    }
+
+    private function resolveTaskForRequest(string $taskUuid, string $organizationUuid, UserContext $ctx): \WorkEddy\Modules\Task\Domain\Task
+    {
+        $task = $this->requireTasks()->findByUuid($taskUuid);
+        if ($task === null) {
+            throw new NotFoundException('Task not found.');
+        }
+
+        if ($organizationUuid !== '') {
+            $organization = $this->requireOrganization($organizationUuid, $ctx);
+            if ($task->getOrganizationId() !== $organization->getId()) {
+                throw new NotFoundException('Task not found.');
+            }
+
+            return $task;
+        }
+
+        if ($ctx->organizationId !== null && $ctx->organizationId !== $task->getOrganizationId()) {
+            throw new WrongScopeException(
+                'This task belongs to a different organization scope.',
+                organizationUuid: $this->organizationUuidForTask($task),
+            );
+        }
+
+        return $task;
+    }
+
+    private function organizationUuidForTask(\WorkEddy\Modules\Task\Domain\Task $task): string
+    {
+        return $this->requireOrganizations()->findById($task->getOrganizationId())?->getUuid()
+            ?? throw new NotFoundException('Organization not found.');
     }
 
     private function serializeTask(\WorkEddy\Modules\Task\Domain\Task $task): array

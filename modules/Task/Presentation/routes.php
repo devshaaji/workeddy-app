@@ -19,7 +19,10 @@ return function (RouteRegistrar $routes): void {
         $api->add('GET', '/organizations/{id:' . $uuid . '}/tasks', [TaskController::class, 'list'], ['auth']);
         $api->add('POST', '/organizations/{id:' . $uuid . '}/tasks', [TaskController::class, 'create'], ['auth']);
         $api->add('GET', '/organizations/{id:' . $uuid . '}/tasks/{taskId:' . $uuid . '}', [TaskController::class, 'show'], ['auth']);
+        $api->add('GET', '/tasks/{taskId:' . $uuid . '}', [TaskController::class, 'show'], ['auth']);
         $api->add('PUT', '/organizations/{id:' . $uuid . '}/tasks/{taskId:' . $uuid . '}', [TaskController::class, 'update'], ['auth']);
+        $api->add('PUT', '/tasks/{taskId:' . $uuid . '}', [TaskController::class, 'update'], ['auth']);
         $api->add('DELETE', '/organizations/{id:' . $uuid . '}/tasks/{taskId:' . $uuid . '}', [TaskController::class, 'delete'], ['auth']);
+        $api->add('DELETE', '/tasks/{taskId:' . $uuid . '}', [TaskController::class, 'delete'], ['auth']);
     });
 };

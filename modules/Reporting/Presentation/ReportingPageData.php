@@ -36,6 +36,11 @@ final class ReportingPageData
         return array_replace($this->snapshots->pilotSummary($ctx->organizationUuid, $filters), ['user' => (string) $ctx->userId]);
     }
 
+    public function impactTracker(UserContext $ctx, array $filters = []): array
+    {
+        return array_replace($this->snapshots->impactTracker($ctx->organizationUuid, $filters), ['user' => (string) $ctx->userId]);
+    }
+
     public function dashboardOverview(UserContext $ctx, array $filters = []): array
     {
         return array_replace($this->snapshots->dashboardOverview($ctx->organizationUuid, $filters), ['user' => (string) $ctx->userId]);
