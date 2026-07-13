@@ -215,7 +215,7 @@ final class IAMSettingsProvider implements IModuleSettingsProvider
                 key: IAMSettings::AUTH_OTP_ENABLED,
                 module: 'iam',
                 type: SettingType::BOOLEAN,
-                default: true,
+                default: false,
                 label: 'Require OTP at Sign In',
                 description: 'Whether successful password login must be verified with a one-time code.',
             ),

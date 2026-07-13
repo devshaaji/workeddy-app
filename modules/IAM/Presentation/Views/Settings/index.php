@@ -136,7 +136,7 @@ require $v2Root . '/shared/Views/Partials/page_header.php';
                 <div class="row g-4">
                     <div class="col-md-6">
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="auth_otp_enabled" name="auth_otp_enabled" data-default="<?= $default('auth_otp_enabled', true) ? '1' : '0' ?>"<?= $checked($settings['auth_otp_enabled'] ?? true) ?>>
+                            <input class="form-check-input" type="checkbox" id="auth_otp_enabled" name="auth_otp_enabled" data-default="<?= $default('auth_otp_enabled', false) ? '1' : '0' ?>"<?= $checked($settings['auth_otp_enabled'] ?? false) ?>>
                             <label class="form-check-label" for="auth_otp_enabled">Require OTP at sign in</label>
                             <div class="form-text">Successful password login must be verified with a one-time code.</div>
                         </div>

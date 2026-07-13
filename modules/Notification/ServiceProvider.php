@@ -100,7 +100,7 @@ final class ServiceProvider implements ModuleServiceProviderInterface
     public function getJobHandlers(): array
     {
         return [
-            \WorkEddy\Modules\Notification\Application\Job\SendNotificationJob::class => \WorkEddy\Modules\Notification\Application\Job\SendNotificationJobHandler::class,
+            \WorkEddy\Modules\Notification\Application\Job\SendNotificationJob::JOB_TYPE => \WorkEddy\Modules\Notification\Application\Job\SendNotificationJobHandler::class,
         ];
     }
 
