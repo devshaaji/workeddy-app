@@ -49,8 +49,7 @@ services:
     volumes:
       - .:/var/www/html
       - vendor_data:/var/www/html/vendor
-      - storage_data:/storage # same volume as api service
-      - storage_data:/var/www/html/v2/storage/app/private
+      - storage_data:/storage # shared storage volume for workers/nginx
     depends_on:
       mysql:
         condition: service_healthy
@@ -75,7 +74,6 @@ services:
       - .:/var/www/html
       - vendor_data:/var/www/html/vendor
       - storage_data:/storage
-      - storage_data:/var/www/html/v2/storage/app/private
     depends_on:
       mysql:
         condition: service_healthy
@@ -107,14 +105,13 @@ services:
       - .:/var/www/html
       - vendor_data:/var/www/html/vendor
       - storage_data:/storage
-      - storage_data:/var/www/html/v2/storage/app/private
     depends_on:
       mysql:
         condition: service_healthy
       api:
         condition: service_started
 
-  v2-video-worker:
+  video-worker:
     build:
       context: .
       dockerfile: infrastructure/docker/video-worker.dockerfile
@@ -168,7 +165,6 @@ services:
       - .:/var/www/html
       - vendor_data:/var/www/html/vendor
       - storage_data:/storage
-      - storage_data:/var/www/html/v2/storage/app/private
     depends_on:
       mysql:
         condition: service_healthy
