@@ -153,7 +153,7 @@ final class NotificationApiController
             'active_provider_per_channel',
         ]);
 
-        $this->settings->setMany('notification', is_array($values) ? array_intersect_key($values, $allowed) : [], $ctx->userId);
+        $this->settings->setMany('notification', is_array($values) ? array_intersect_key($values, $allowed) : [], (string) $ctx->userId);
 
         return $this->getSettings($request, $request->routeParams);
     }
