@@ -8,6 +8,8 @@ declare(strict_types=1);
 /** @var bool $canEditPage */
 /** @var bool $canViewHistory */
 
+use WorkEddy\Modules\Content\Support\ContentRichTextRenderer;
+
 $v2Root = dirname(__DIR__, 4);
 $pageTitle = (string) ($summary['title'] ?? 'Methodology and Limitations');
 $pagePurpose = 'Platform';
@@ -45,6 +47,7 @@ if ($page !== null) {
             'sectionKey' => $section->sectionKey,
             'heading' => $section->heading,
             'blocks' => $section->blocks,
+            'content' => $section->content,
             'plainText' => $section->plainText,
         ];
     }
@@ -52,9 +55,42 @@ if ($page !== null) {
 
 $emptyMessage = $message ?? 'This content page has not been published yet.';
 $references = $page?->references ?? [];
-$referenceMap = [];
-foreach ($references as $reference) {
-    $referenceMap[$reference->sectionKey ?? '_global'][] = $reference;
+$referenceIndexByKey = [];
+$referenceIndexByTitle = [];
+$usedReferenceKeys = [];
+$usedReferenceTitles = [];
+foreach ($contentSections as $section) {
+    $content = is_array($section['content'] ?? null) ? $section['content'] : [];
+    if ($content === []) {
+        continue;
+    }
+
+    $mentions = ContentRichTextRenderer::collectReferenceMentions($content);
+    $usedReferenceKeys = array_merge($usedReferenceKeys, $mentions['keys']);
+    $usedReferenceTitles = array_merge($usedReferenceTitles, $mentions['titles']);
+}
+$usedReferenceKeys = array_values(array_unique($usedReferenceKeys));
+$usedReferenceTitles = array_values(array_unique($usedReferenceTitles));
+$references = array_values(array_filter(
+    $references,
+    static function (object $reference) use ($usedReferenceKeys, $usedReferenceTitles): bool {
+        if ($reference->referenceKey !== null && $reference->referenceKey !== '' && in_array($reference->referenceKey, $usedReferenceKeys, true)) {
+            return true;
+        }
+
+        $titleKey = mb_strtolower(trim($reference->title));
+        return $titleKey !== '' && in_array($titleKey, $usedReferenceTitles, true);
+    },
+));
+foreach ($references as $index => $reference) {
+    $number = $index + 1;
+    if ($reference->referenceKey !== null && $reference->referenceKey !== '') {
+        $referenceIndexByKey[$reference->referenceKey] = $number;
+    }
+    $titleKey = mb_strtolower(trim($reference->title));
+    if ($titleKey !== '' && !isset($referenceIndexByTitle[$titleKey])) {
+        $referenceIndexByTitle[$titleKey] = $number;
+    }
 }
 
 $introSection = $contentSections[0] ?? null;
@@ -69,7 +105,14 @@ $introText = $introSection['plainText'] ?? 'WorkEddy explains how it measures er
 $publishedDate = $page?->publishedAt?->format('F j, Y');
 $wordCount = str_word_count(trim(implode(' ', array_map(static fn(array $section): string => (string) ($section['plainText'] ?? ''), $contentSections))));
 
-$renderBlocks = static function (array $blocks): void {
+$renderBlocks = static function (array $blocks, ?array $content = null) use ($referenceIndexByKey, $referenceIndexByTitle): void {
+    if (is_array($content) && (($content['format'] ?? null) === 'quill_delta')) {
+        echo '<div class="content-richtext-body">';
+        echo ContentRichTextRenderer::render($content, $referenceIndexByKey, $referenceIndexByTitle);
+        echo '</div>';
+        return;
+    }
+
     foreach ($blocks as $block) {
         $type = (string) ($block['type'] ?? '');
         if ($type === 'paragraph') {
@@ -77,7 +120,7 @@ $renderBlocks = static function (array $blocks): void {
             continue;
         }
         if ($type === 'rich_text') {
-            echo '<p>' . nl2br(htmlspecialchars((string) ($block['body'] ?? ''), ENT_QUOTES, 'UTF-8')) . '</p>';
+            echo '<div class="content-richtext-body">' . (string) ($block['body'] ?? '') . '</div>';
             continue;
         }
         if ($type === 'list') {
@@ -89,6 +132,25 @@ $renderBlocks = static function (array $blocks): void {
             continue;
         }
         if ($type === 'image') {
+            $storageFileUuid = trim((string) ($block['storageFileUuid'] ?? ''));
+            $previewUrl = trim((string) ($block['previewUrl'] ?? ''));
+            $imageSrc = $previewUrl !== '' ? $previewUrl : ($storageFileUuid !== '' ? '/api/v1/storage/files/' . rawurlencode($storageFileUuid) . '/view' : '');
+            if ($imageSrc !== '') {
+                echo '<figure class="content-image-embed">';
+                echo '<img class="content-image-embed__image" src="' . htmlspecialchars($imageSrc, ENT_QUOTES, 'UTF-8') . '" alt="' . htmlspecialchars((string) ($block['altText'] ?? ''), ENT_QUOTES, 'UTF-8') . '" loading="lazy">';
+                if (!empty($block['caption']) || !empty($block['altText'])) {
+                    echo '<figcaption class="content-image-embed__caption">';
+                    if (!empty($block['caption'])) {
+                        echo '<div class="content-image-embed__title">' . htmlspecialchars((string) $block['caption'], ENT_QUOTES, 'UTF-8') . '</div>';
+                    }
+                    if (!empty($block['altText'])) {
+                        echo '<div class="content-image-embed__meta">' . htmlspecialchars((string) $block['altText'], ENT_QUOTES, 'UTF-8') . '</div>';
+                    }
+                    echo '</figcaption>';
+                }
+                echo '</figure>';
+                continue;
+            }
             echo '<div class="methodology-inline-note">';
             echo '<div class="fw-semibold mb-1">Illustration</div>';
             echo '<div class="small text-muted">Media UUID: ' . htmlspecialchars((string) ($block['mediaUuid'] ?? ''), ENT_QUOTES, 'UTF-8') . '</div>';
@@ -98,33 +160,6 @@ $renderBlocks = static function (array $blocks): void {
             echo '</div>';
         }
     }
-};
-
-$renderReferences = static function (array $sectionReferences): void {
-    if ($sectionReferences === []) {
-        return;
-    }
-
-    echo '<div class="methodology-inline-note">';
-    echo '<h3 class="small text-uppercase fw-semibold text-muted mb-3">Sources</h3>';
-    echo '<div class="methodology-reference-list">';
-    foreach ($sectionReferences as $reference) {
-        $referenceMeta = trim(implode(' | ', array_filter([$reference->author, $reference->year])));
-        echo '<article class="methodology-reference-entry">';
-        echo '<div class="fw-semibold mb-1">' . htmlspecialchars($reference->title, ENT_QUOTES, 'UTF-8') . '</div>';
-        if ($referenceMeta !== '') {
-            echo '<div class="methodology-reference-meta small text-muted">' . htmlspecialchars($referenceMeta, ENT_QUOTES, 'UTF-8') . '</div>';
-        }
-        if ($reference->citation !== null && $reference->citation !== '') {
-            echo '<p>' . htmlspecialchars($reference->citation, ENT_QUOTES, 'UTF-8') . '</p>';
-        }
-        if ($reference->url !== null && $reference->url !== '') {
-            echo '<a href="' . htmlspecialchars($reference->url, ENT_QUOTES, 'UTF-8') . '" target="_blank" rel="noopener noreferrer">Open source</a>';
-        }
-        echo '</article>';
-    }
-    echo '</div>';
-    echo '</div>';
 };
 ?>
 
@@ -170,7 +205,7 @@ $renderReferences = static function (array $sectionReferences): void {
                         <?php $introAnchor = 'methodology-' . preg_replace('/[^a-z0-9-]+/i', '-', (string) ($introSection['sectionKey'] ?? '')); ?>
                         <section id="<?= htmlspecialchars($introAnchor, ENT_QUOTES, 'UTF-8') ?>" class="methodology-tree-opening">
                             <h2 class="h4 fw-semibold mb-3"><?= htmlspecialchars((string) ($introSection['heading'] ?? ''), ENT_QUOTES, 'UTF-8') ?></h2>
-                            <?php $renderBlocks($introSection['blocks'] ?? []); ?>
+                            <?php $renderBlocks($introSection['blocks'] ?? [], is_array($introSection['content'] ?? null) ? $introSection['content'] : null); ?>
                         </section>
                     <?php endif; ?>
 
@@ -178,12 +213,10 @@ $renderReferences = static function (array $sectionReferences): void {
                         <?php
                         $sectionKey = (string) ($section['sectionKey'] ?? '');
                         $anchor = 'methodology-' . preg_replace('/[^a-z0-9-]+/i', '-', $sectionKey);
-                        $sectionReferences = $referenceMap[$sectionKey] ?? [];
                         ?>
                         <section id="<?= htmlspecialchars($anchor, ENT_QUOTES, 'UTF-8') ?>" class="methodology-tree-section">
                             <h2 class="h5 fw-semibold mb-3"><?= htmlspecialchars((string) ($section['heading'] ?? ''), ENT_QUOTES, 'UTF-8') ?></h2>
-                            <?php $renderBlocks($section['blocks'] ?? []); ?>
-                            <?php $renderReferences($sectionReferences); ?>
+                            <?php $renderBlocks($section['blocks'] ?? [], is_array($section['content'] ?? null) ? $section['content'] : null); ?>
                         </section>
                     <?php endforeach; ?>
 
@@ -191,21 +224,14 @@ $renderReferences = static function (array $sectionReferences): void {
                         <?php
                         $closingKey = (string) ($closingSection['sectionKey'] ?? '');
                         $closingAnchor = 'methodology-' . preg_replace('/[^a-z0-9-]+/i', '-', $closingKey);
-                        $closingReferences = $referenceMap[$closingKey] ?? [];
                         ?>
                         <section id="<?= htmlspecialchars($closingAnchor, ENT_QUOTES, 'UTF-8') ?>" class="methodology-tree-closing">
                             <h2 class="h4 fw-semibold mb-3"><?= htmlspecialchars((string) ($closingSection['heading'] ?? ''), ENT_QUOTES, 'UTF-8') ?></h2>
-                            <?php $renderBlocks($closingSection['blocks'] ?? []); ?>
-                            <?php $renderReferences($closingReferences); ?>
+                            <?php $renderBlocks($closingSection['blocks'] ?? [], is_array($closingSection['content'] ?? null) ? $closingSection['content'] : null); ?>
                         </section>
                     <?php endif; ?>
 
-                    <?php if (($referenceMap['_global'] ?? []) !== []): ?>
-                        <section class="methodology-tree-section">
-                            <h2 class="h5 fw-semibold mb-3">Additional sources</h2>
-                            <?php $renderReferences($referenceMap['_global']); ?>
-                        </section>
-                    <?php endif; ?>
+                    <?php require __DIR__ . '/Partials/render_reference_list.php'; ?>
                 </article>
             </div>
         <?php endif; ?>

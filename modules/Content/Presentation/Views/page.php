@@ -8,6 +8,8 @@ declare(strict_types=1);
 /** @var bool $canEditPage */
 /** @var bool $canViewHistory */
 
+use WorkEddy\Modules\Content\Support\ContentRichTextRenderer;
+
 $v2Root = dirname(__DIR__, 4);
 $pageTitle = (string) ($summary['title'] ?? 'Content Page');
 $pagePurpose = 'Platform';
@@ -42,15 +44,50 @@ require $v2Root . '/shared/Views/Partials/page_header.php';
 
 $contentSections = [];
 $totalWordCount = 0;
+$references = $page?->references ?? [];
+$referenceIndexByKey = [];
+$referenceIndexByTitle = [];
+$usedReferenceKeys = [];
+$usedReferenceTitles = [];
 if ($page !== null) {
     foreach ($page->sections as $section) {
         $contentSections[] = [
             'sectionKey' => $section->sectionKey,
             'heading' => $section->heading,
             'blocks' => $section->blocks,
+            'content' => $section->content,
             'plainText' => $section->plainText,
         ];
         $totalWordCount += str_word_count($section->plainText);
+
+        if ($section->content !== []) {
+            $mentions = ContentRichTextRenderer::collectReferenceMentions($section->content);
+            $usedReferenceKeys = array_merge($usedReferenceKeys, $mentions['keys']);
+            $usedReferenceTitles = array_merge($usedReferenceTitles, $mentions['titles']);
+        }
+    }
+    $usedReferenceKeys = array_values(array_unique($usedReferenceKeys));
+    $usedReferenceTitles = array_values(array_unique($usedReferenceTitles));
+    $references = array_values(array_filter(
+        $references,
+        static function (object $reference) use ($usedReferenceKeys, $usedReferenceTitles): bool {
+            if ($reference->referenceKey !== null && $reference->referenceKey !== '' && in_array($reference->referenceKey, $usedReferenceKeys, true)) {
+                return true;
+            }
+
+            $titleKey = mb_strtolower(trim($reference->title));
+            return $titleKey !== '' && in_array($titleKey, $usedReferenceTitles, true);
+        },
+    ));
+    foreach ($references as $index => $reference) {
+        $number = $index + 1;
+        if ($reference->referenceKey !== null && $reference->referenceKey !== '') {
+            $referenceIndexByKey[$reference->referenceKey] = $number;
+        }
+        $titleKey = mb_strtolower(trim($reference->title));
+        if ($titleKey !== '' && !isset($referenceIndexByTitle[$titleKey])) {
+            $referenceIndexByTitle[$titleKey] = $number;
+        }
     }
 }
 
@@ -74,6 +111,7 @@ $publishedAt = $page?->publishedAt;
             </div>
 
             <?php require __DIR__ . '/Partials/render_sections.php'; ?>
+            <?php require __DIR__ . '/Partials/render_reference_list.php'; ?>
         </main>
 
         <!-- Right: Sticky TOC Column -->

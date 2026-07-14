@@ -5,6 +5,8 @@ declare(strict_types=1);
 /** @var array<string, mixed> $summary */
 /** @var ?\WorkEddy\Modules\Content\Application\DTOs\ContentPreviewPage $preview */
 
+use WorkEddy\Modules\Content\Support\ContentRichTextRenderer;
+
 $v2Root = dirname(__DIR__, 4);
 $pageTitle = (string) ($summary['title'] ?? 'Content Preview');
 $pagePurpose = 'Platform';
@@ -29,6 +31,52 @@ $pageActions = [
 require $v2Root . '/shared/Views/Partials/page_header.php';
 
 $contentSections = $preview !== null && is_array($preview->snapshot['sections'] ?? null) ? array_values($preview->snapshot['sections']) : [];
+$references = [];
+$referenceIndexByKey = [];
+$referenceIndexByTitle = [];
+$usedReferenceKeys = [];
+$usedReferenceTitles = [];
+foreach (($preview->snapshot['references'] ?? []) as $reference) {
+    if (!is_array($reference)) {
+        continue;
+    }
+    $references[] = $reference;
+}
+foreach ($contentSections as $section) {
+    $content = is_array($section['content'] ?? null) ? $section['content'] : [];
+    if ($content === []) {
+        continue;
+    }
+
+    $mentions = ContentRichTextRenderer::collectReferenceMentions($content);
+    $usedReferenceKeys = array_merge($usedReferenceKeys, $mentions['keys']);
+    $usedReferenceTitles = array_merge($usedReferenceTitles, $mentions['titles']);
+}
+$usedReferenceKeys = array_values(array_unique($usedReferenceKeys));
+$usedReferenceTitles = array_values(array_unique($usedReferenceTitles));
+$references = array_values(array_filter(
+    $references,
+    static function (array $reference) use ($usedReferenceKeys, $usedReferenceTitles): bool {
+        $referenceKey = trim((string) ($reference['_key'] ?? ''));
+        if ($referenceKey !== '' && in_array($referenceKey, $usedReferenceKeys, true)) {
+            return true;
+        }
+
+        $titleKey = mb_strtolower(trim((string) ($reference['title'] ?? '')));
+        return $titleKey !== '' && in_array($titleKey, $usedReferenceTitles, true);
+    },
+));
+foreach ($references as $index => $reference) {
+    $number = $index + 1;
+    $referenceKey = trim((string) ($reference['_key'] ?? ''));
+    if ($referenceKey !== '') {
+        $referenceIndexByKey[$referenceKey] = $number;
+    }
+    $titleKey = mb_strtolower(trim((string) ($reference['title'] ?? '')));
+    if ($titleKey !== '' && !isset($referenceIndexByTitle[$titleKey])) {
+        $referenceIndexByTitle[$titleKey] = $number;
+    }
+}
 
 $totalWordCount = 0;
 foreach ($contentSections as $sec) {
@@ -71,6 +119,7 @@ $emptyMessage = 'No previewable revision is available.';
             </div>
 
             <?php require __DIR__ . '/Partials/render_sections.php'; ?>
+            <?php require __DIR__ . '/Partials/render_reference_list.php'; ?>
         </main>
 
         <!-- Right: Table of Contents Column -->

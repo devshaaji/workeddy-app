@@ -7,6 +7,7 @@ namespace WorkEddy\Modules\Content\Application\DTOs;
 final class PublishedContentReference
 {
     public function __construct(
+        public readonly ?string $referenceKey,
         public readonly ?string $sectionKey,
         public readonly string $title,
         public readonly ?string $author,

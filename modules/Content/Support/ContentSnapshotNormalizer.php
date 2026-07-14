@@ -30,7 +30,6 @@ final class ContentSnapshotNormalizer
                 $normalized['blocks'] = [];
             }
 
-            unset($normalized['content']);
             $sections[$index] = $normalized;
         }
 
@@ -54,28 +53,50 @@ final class ContentSnapshotNormalizer
         $delta = $content['delta'] ?? null;
         $ops = is_array($delta['ops'] ?? null) ? $delta['ops'] : [];
         $blocks = [];
-        $paragraphBuffer = '';
+        $lineBuffer = '';
         $listItems = [];
 
-        $flushParagraphs = static function () use (&$paragraphBuffer, &$blocks): void {
-            if ($paragraphBuffer === '') {
+        $flushLine = static function (array $attributes = []) use (&$lineBuffer, &$blocks, &$listItems): void {
+            $line = trim($lineBuffer);
+            $lineBuffer = '';
+
+            if (($attributes['list'] ?? null) !== null) {
+                if ($line !== '') {
+                    $listItems[] = $line;
+                }
                 return;
             }
 
-            $segments = preg_split("/\n+/", str_replace("\r", '', $paragraphBuffer)) ?: [];
-            foreach ($segments as $segment) {
-                $text = trim((string) $segment);
-                if ($text === '') {
-                    continue;
-                }
-
+            if ($listItems !== []) {
                 $blocks[] = [
-                    'type' => 'paragraph',
-                    'text' => $text,
+                    'type' => 'list',
+                    'items' => array_values($listItems),
                 ];
+                $listItems = [];
             }
 
-            $paragraphBuffer = '';
+            if ($line === '') {
+                return;
+            }
+
+            if (($attributes['header'] ?? null) !== null || !empty($attributes['blockquote']) || !empty($attributes['bold']) || !empty($attributes['italic']) || !empty($attributes['link'])) {
+                $blocks[] = [
+                    'type' => 'rich_text',
+                    'body' => ContentRichTextRenderer::render([
+                        'format' => 'quill_delta',
+                        'delta' => ['ops' => [[
+                            'insert' => html_entity_decode(strip_tags($line), ENT_QUOTES | ENT_HTML5, 'UTF-8') . "\n",
+                            'attributes' => $attributes,
+                        ]]],
+                    ]),
+                ];
+                return;
+            }
+
+            $blocks[] = [
+                'type' => 'paragraph',
+                'text' => html_entity_decode(strip_tags($line), ENT_QUOTES | ENT_HTML5, 'UTF-8'),
+            ];
         };
 
         $flushList = static function () use (&$listItems, &$blocks): void {
@@ -103,20 +124,17 @@ final class ContentSnapshotNormalizer
             $attributes = is_array($op['attributes'] ?? null) ? $op['attributes'] : [];
 
             if (is_string($insert)) {
-                if (($attributes['list'] ?? null) !== null) {
-                    $flushParagraphs();
-                    $segments = preg_split("/\n+/", str_replace("\r", '', $insert)) ?: [];
-                    foreach ($segments as $segment) {
-                        $text = trim((string) $segment);
-                        if ($text !== '') {
-                            $listItems[] = $text;
-                        }
+                $parts = explode("\n", str_replace("\r", '', $insert));
+                $lastIndex = count($parts) - 1;
+                foreach ($parts as $index => $part) {
+                    if ($part !== '') {
+                        $lineBuffer .= self::renderInlineBlockText($part, $attributes);
                     }
-                    continue;
-                }
 
-                $flushList();
-                $paragraphBuffer .= $insert;
+                    if ($index < $lastIndex) {
+                        $flushLine($attributes);
+                    }
+                }
                 continue;
             }
 
@@ -124,7 +142,7 @@ final class ContentSnapshotNormalizer
                 continue;
             }
 
-            $flushParagraphs();
+            $flushLine();
             $flushList();
 
             if (is_array($insert['contentImage'] ?? null)) {
@@ -132,6 +150,8 @@ final class ContentSnapshotNormalizer
                 $blocks[] = [
                     'type' => 'image',
                     'mediaUuid' => trim((string) ($image['mediaUuid'] ?? '')),
+                    'storageFileUuid' => trim((string) ($image['storageFileUuid'] ?? '')),
+                    'previewUrl' => trim((string) ($image['previewUrl'] ?? '')),
                     'altText' => (string) ($image['altText'] ?? ''),
                     'caption' => (string) ($image['caption'] ?? ''),
                     'display' => (string) ($image['display'] ?? 'wide'),
@@ -139,9 +159,30 @@ final class ContentSnapshotNormalizer
             }
         }
 
-        $flushParagraphs();
+        $flushLine();
         $flushList();
 
         return $blocks;
+    }
+
+    /**
+     * @param array<string, mixed> $attributes
+     */
+    private static function renderInlineBlockText(string $text, array $attributes): string
+    {
+        $html = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+
+        if (!empty($attributes['link']) && is_string($attributes['link'])) {
+            $href = htmlspecialchars($attributes['link'], ENT_QUOTES, 'UTF-8');
+            $html = '<a href="' . $href . '" target="_blank" rel="noopener noreferrer">' . $html . '</a>';
+        }
+        if (!empty($attributes['italic'])) {
+            $html = '<em>' . $html . '</em>';
+        }
+        if (!empty($attributes['bold'])) {
+            $html = '<strong>' . $html . '</strong>';
+        }
+
+        return $html;
     }
 }

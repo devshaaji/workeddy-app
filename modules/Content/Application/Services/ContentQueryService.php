@@ -11,6 +11,7 @@ use WorkEddy\Modules\Content\Application\DTOs\PublishedContentSection;
 use WorkEddy\Modules\Content\Domain\Contracts\ContentPageReader;
 use WorkEddy\Modules\Content\Domain\Contracts\ContentPreviewReader;
 use WorkEddy\Modules\Content\Domain\Contracts\IContentPageRepository;
+use WorkEddy\Modules\Content\Support\ContentRichTextRenderer;
 
 final class ContentQueryService implements ContentPageReader, ContentPreviewReader
 {
@@ -35,11 +36,15 @@ final class ContentQueryService implements ContentPageReader, ContentPreviewRead
             if (!is_array($section)) {
                 continue;
             }
-            $plainText = $this->blocksToPlainText((array) ($section['blocks'] ?? []));
+            $content = is_array($section['content'] ?? null) ? $section['content'] : [];
+            $plainText = $content !== []
+                ? ContentRichTextRenderer::plainText($content)
+                : $this->blocksToPlainText((array) ($section['blocks'] ?? []));
             $sections[] = new PublishedContentSection(
                 (string) ($section['sectionKey'] ?? ''),
                 (string) ($section['heading'] ?? ''),
                 is_array($section['blocks'] ?? null) ? array_values($section['blocks']) : [],
+                $content,
                 (int) ($section['displayOrder'] ?? 0),
                 $plainText,
             );
@@ -51,6 +56,7 @@ final class ContentQueryService implements ContentPageReader, ContentPreviewRead
                 continue;
             }
             $references[] = new PublishedContentReference(
+                isset($reference['_key']) ? (string) $reference['_key'] : null,
                 isset($reference['sectionKey']) ? (string) $reference['sectionKey'] : null,
                 (string) ($reference['title'] ?? ''),
                 isset($reference['author']) ? (string) $reference['author'] : null,

@@ -13,6 +13,7 @@ final class PublishedContentSection
         public readonly string $sectionKey,
         public readonly string $heading,
         public readonly array $blocks,
+        public readonly array $content,
         public readonly int $displayOrder,
         public readonly string $plainText,
     ) {}

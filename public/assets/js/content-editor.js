@@ -765,9 +765,9 @@
     }
     state.isDirty = true;
     bootstrap.Modal.getInstance(document.getElementById('ceReferenceModal'))?.hide();
-    // Insert a simple inline marker; the canonical citation is stored in snapshot.references.
+    // Insert a reference embed; the canonical citation remains in snapshot.references.
     if (!key) {
-      insertReferenceMarker(data);
+      insertContentReference(data);
     }
     renderReferencesTab();
   };
