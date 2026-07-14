@@ -92,16 +92,9 @@ require $v2Root . '/shared/Views/Partials/page_header.php';
                             <?php
                             $isActiveModule = ($module['key'] ?? '') === $moduleKey;
                             $moduleUrl = (string) ($module['url'] ?? '#');
-                            $pointClass = match ($index % 5) {
-                                0 => 'timeline-point-primary',
-                                1 => 'timeline-point-success',
-                                2 => 'timeline-point-info',
-                                3 => 'timeline-point-warning',
-                                default => 'timeline-point-secondary',
-                            };
                             ?>
                             <li class="timeline-item timeline-item-transparent<?= $isActiveModule ? ' settings-nav-item-active' : ' border-dashed' ?>">
-                                <span class="timeline-point <?= $pointClass ?>"></span>
+                                <span class="timeline-point <?= $isActiveModule ? 'timeline-point-primary' : 'timeline-point-secondary' ?>"></span>
                                 <div class="timeline-event">
                                     <div class="timeline-header align-items-start">
                                         <div class="settings-nav-module">
@@ -115,16 +108,8 @@ require $v2Root . '/shared/Views/Partials/page_header.php';
                                         <div class="settings-nav-sections">
                                             <ul class="timeline settings-nav-subtimeline mb-0">
                                                 <?php foreach ($activeSectionEntries as $sectionIndex => $section): ?>
-                                                    <?php
-                                                    $sectionPointClass = match ($sectionIndex % 4) {
-                                                        0 => 'timeline-point-primary',
-                                                        1 => 'timeline-point-success',
-                                                        2 => 'timeline-point-info',
-                                                        default => 'timeline-point-warning',
-                                                    };
-                                                    ?>
                                                     <li class="timeline-item timeline-item-transparent border-dashed">
-                                                        <span class="timeline-point <?= $sectionPointClass ?>"></span>
+                                                        <span class="timeline-point timeline-point-primary"></span>
                                                         <div class="timeline-event">
                                                             <a class="settings-nav-section-link" href="#<?= $e($section['id']) ?>">
                                                                 <span><?= $e($section['label']) ?></span>
