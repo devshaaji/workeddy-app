@@ -8,7 +8,7 @@ $pagePurpose = 'Overview';
 $pageActions = [
     ['label' => 'Income', 'url' => '/finance/income', 'class' => 'btn btn-white'],
     ['label' => 'Expenses', 'url' => '/finance/expenses', 'class' => 'btn btn-white'],
-    ['label' => 'Settings', 'url' => '/finance/settings', 'class' => 'btn btn-outline-secondary'],
+    ['label' => 'Settings', 'url' => '/settings/page?module=finance', 'class' => 'btn btn-outline-secondary'],
 ];
 $pageScripts = ['js/finance.js'];
 require $v2Root . '/shared/Views/Partials/page_header.php';

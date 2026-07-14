@@ -16,7 +16,7 @@ $pageActions = [];
 if (!empty($defaults['allow_self_service_upgrade']) || true) {
     $pageActions[] = [
         'label' => 'Subscription Settings',
-        'url' => '/subscriptions/settings',
+        'url' => '/settings/page?module=subscription',
         'class' => 'btn btn-outline-primary',
         'icon' => 'gear',
     ];

@@ -12,7 +12,7 @@ if ($canUpload) {
     $pageActions[] = ['label' => 'Upload Files', 'url' => '#', 'class' => 'btn btn-primary', 'icon' => 'cloud-upload', 'id' => 'sfmUploadBtn'];
 }
 if ($canManageSettings) {
-    $pageActions[] = ['label' => 'Storage Settings', 'url' => '#', 'class' => 'btn btn-outline-secondary', 'icon' => 'gear', 'id' => 'sfmSettingsBtn'];
+    $pageActions[] = ['label' => 'Storage Settings', 'url' => '/settings/page?module=storage', 'class' => 'btn btn-outline-secondary', 'icon' => 'gear'];
 }
 require $v2Root . '/shared/Views/Partials/page_header.php';
 ?>
