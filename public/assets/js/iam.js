@@ -1257,6 +1257,28 @@
   }
 
   /* -----------------------------------------------------------------------
+   * SCREEN: USER EDIT  (data-iam-form="user-edit")
+   * --------------------------------------------------------------------- */
+  function initUserEdit() {
+    var form = document.getElementById('iam-user-edit-form');
+    if (!form) { return; }
+
+    var userId = form.getAttribute('data-user-id') || '';
+
+    App.forms.bindAjaxForm(form, {
+      method: 'PUT',
+      url: form.getAttribute('action'),
+      alertTarget: '#iam-user-edit-feedback',
+      onSuccess: function (res) {
+        notify('success', (res && res.message) || 'User profile updated successfully.');
+        if (userId) {
+          window.location.href = '/users/' + userId;
+        }
+      }
+    });
+  }
+
+  /* -----------------------------------------------------------------------
    * SCREEN: ROLE DETAIL  (data-iam-screen="role-detail")
    * --------------------------------------------------------------------- */
   function initRoleDetail() {
@@ -1496,6 +1518,11 @@
       case 'user-detail': initUserDetail(); break;
       case 'role-detail': initRoleDetail(); break;
       case 'settings': initSettings(); break;
+    }
+
+    // User security page uses form attribute, not data-iam-screen
+    if (document.getElementById('iam-user-edit-form')) {
+      initUserEdit();
     }
 
     // User security page uses form attribute, not data-iam-screen
