@@ -1,0 +1,118 @@
+/* Container and layout grid */
+.content-article-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.5rem;
+    align-items: start;
+    margin-top: 1rem;
+}
+
+@media (min-width: 1100px) {
+    .content-article-grid {
+        grid-template-columns: minmax(0, 760px) 260px;
+        justify-content: center;
+    }
+}
+
+/* Metadata area */
+.content-article-metadata {
+    border-bottom: 1px solid var(--bs-border-color);
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+}
+
+/* Sidebar and Table of Contents */
+.content-article-sidebar {
+    position: sticky;
+    top: 8rem;
+}
+
+@media (max-width: 1099.98px) {
+    .content-article-sidebar {
+        display: none;
+    }
+}
+
+.content-toc-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+    letter-spacing: 0.05em;
+    margin-bottom: 0.75rem;
+}
+
+.content-toc-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    border-left: 1px solid var(--bs-border-color);
+    padding-left: 1rem;
+    list-style: none;
+    margin: 0;
+}
+
+.content-toc-link {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--bs-secondary-color);
+    text-decoration: none;
+    line-height: 1.4;
+    transition: color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+    border-left: 2px solid transparent;
+    margin-left: calc(-1rem - 1px);
+    padding-left: calc(1rem - 1px);
+}
+
+.content-toc-link:hover {
+    color: var(--bs-emphasis-color);
+}
+
+.content-toc-link.is-active {
+    color: var(--bs-primary);
+    font-weight: 600;
+    border-left-color: var(--bs-primary);
+}
+
+/* Typography styles for the main article content */
+.content-article-main {
+    max-width: 760px;
+    width: 100%;
+}
+
+.content-article-main h2 {
+    font-family: Georgia, serif;
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--bs-emphasis-color);
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    scroll-margin-top: 6.5rem;
+}
+
+.content-article-main p {
+    font-size: 1rem;
+    line-height: 1.75;
+    color: var(--bs-body-color);
+    margin-bottom: 1.25rem;
+}
+
+.content-article-main ul {
+    margin-bottom: 1.25rem;
+    padding-left: 1.5rem;
+}
+
+.content-article-main li {
+    font-size: 1rem;
+    line-height: 1.75;
+    color: var(--bs-body-color);
+    margin-bottom: 0.5rem;
+}
+
+.content-image-box {
+    background: var(--bs-tertiary-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+}
