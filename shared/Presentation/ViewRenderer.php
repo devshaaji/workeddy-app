@@ -7,12 +7,14 @@ namespace WorkEddy\Shared\Presentation;
 use WorkEddy\Platform\Http\Response;
 use WorkEddy\Platform\Config\ConfigLoader;
 use WorkEddy\Platform\Session\ISessionService;
+use WorkEddy\Platform\Settings\SettingsRegistry;
 
 final class ViewRenderer
 {
     public function __construct(
         private readonly ConfigLoader $config,
         private readonly ?ISessionService $session = null,
+        private readonly ?SettingsRegistry $settingsRegistry = null,
     ) {}
     /**
      * @param array<string, mixed> $data
@@ -44,6 +46,7 @@ final class ViewRenderer
         $layoutTitle = isset($pageTitle) ? (string) $pageTitle : 'WorkEddy';
         $currentView = $view;
         $currentUserContext = $this->session?->getUserContext();
+        $settingsPageEntries = $this->settingsRegistry?->getPageMetadataEntries() ?? [];
         $layoutFile = APP_ROOT . '/shared/Views/Layouts/' . match ($layout) {
             'auth'   => 'auth',
             'portal' => 'portal',
@@ -87,6 +90,7 @@ final class ViewRenderer
         $layoutTitle = isset($pageTitle) ? (string) $pageTitle : 'NISEPA Revenue Collection';
         $currentView = $view;
         $currentUserContext = $this->session?->getUserContext();
+        $settingsPageEntries = $this->settingsRegistry?->getPageMetadataEntries() ?? [];
         $layoutFile = APP_ROOT . '/shared/Views/Layouts/' . ($layout === 'auth' ? 'auth' : 'public') . '.php';
 
         ob_start();

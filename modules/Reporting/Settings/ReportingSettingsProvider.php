@@ -8,7 +8,7 @@ use WorkEddy\Platform\Settings\IModuleSettingsProvider;
 use WorkEddy\Platform\Settings\SettingDefinition;
 use WorkEddy\Platform\Settings\SettingType;
 
-final class ReportingSettingsProvider implements IModuleSettingsProvider
+final class ReportingSettingsProvider implements IModuleSettingsProvider, \WorkEddy\Platform\Settings\ISettingsPageProvider
 {
     public function getModuleName(): string
     {
@@ -107,5 +107,16 @@ final class ReportingSettingsProvider implements IModuleSettingsProvider
                 description: 'Cautionary language shown wherever estimated impact figures are displayed or exported.',
             ),
         ];
+    }
+
+    public function getSettingsPageMetadata(): \WorkEddy\Platform\Settings\SettingsPageMetadata
+    {
+        return new \WorkEddy\Platform\Settings\SettingsPageMetadata(
+            module: 'reporting',
+            label: 'Reporting',
+            viewPermissions: [\WorkEddy\Modules\Reporting\Authorization\ReportingPermissions::SETTINGS],
+            editPermissions: [\WorkEddy\Modules\Reporting\Authorization\ReportingPermissions::SETTINGS],
+            sortOrder: 180,
+        );
     }
 }

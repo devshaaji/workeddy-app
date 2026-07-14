@@ -19,6 +19,7 @@ final class SettingDefinition
         public readonly bool $editable = true,
         public readonly bool $sensitive = false,
         public readonly bool $restartRequired = false,
+        public readonly string $section = 'General',
     ) {
         $this->validationFn = $validation !== null ? \Closure::fromCallable($validation) : null;
     }

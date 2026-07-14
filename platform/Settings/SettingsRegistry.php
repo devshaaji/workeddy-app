@@ -8,6 +8,8 @@ final class SettingsRegistry
 {
     /** @var array<string, SettingDefinition> */
     private array $definitions = [];
+    /** @var array<string, SettingsPageMetadata> */
+    private array $pageMetadata = [];
 
     /**
      * @param list<IModuleSettingsProvider> $providers
@@ -18,6 +20,10 @@ final class SettingsRegistry
         foreach ($providers as $provider) {
             foreach ($provider->getDefinitions() as $definition) {
                 $registry->register($definition);
+            }
+
+            if ($provider instanceof ISettingsPageProvider) {
+                $registry->registerPageMetadata($provider->getSettingsPageMetadata());
             }
         }
 
@@ -32,6 +38,18 @@ final class SettingsRegistry
         }
 
         $this->definitions[$key] = $definition;
+    }
+
+    public function registerPageMetadata(SettingsPageMetadata $metadata): void
+    {
+        if (isset($this->pageMetadata[$metadata->module])) {
+            throw new \LogicException('Duplicate settings page metadata: ' . $metadata->module);
+        }
+        if ($this->getForModule($metadata->module) === []) {
+            throw new \LogicException('Settings page metadata registered for unknown module: ' . $metadata->module);
+        }
+
+        $this->pageMetadata[$metadata->module] = $metadata;
     }
 
     public function get(string $qualifiedKey): SettingDefinition
@@ -75,5 +93,18 @@ final class SettingsRegistry
         }
 
         return $defs;
+    }
+
+    public function getPageMetadata(string $module): ?SettingsPageMetadata
+    {
+        return $this->pageMetadata[$module] ?? null;
+    }
+
+    /**
+     * @return list<SettingsPageMetadata>
+     */
+    public function getPageMetadataEntries(): array
+    {
+        return array_values($this->pageMetadata);
     }
 }

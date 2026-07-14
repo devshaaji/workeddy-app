@@ -8,7 +8,7 @@ use WorkEddy\Platform\Settings\IModuleSettingsProvider;
 use WorkEddy\Platform\Settings\SettingDefinition;
 use WorkEddy\Platform\Settings\SettingType;
 
-final class WebsiteSettingsProvider implements IModuleSettingsProvider
+final class WebsiteSettingsProvider implements IModuleSettingsProvider, \WorkEddy\Platform\Settings\ISettingsPageProvider
 {
     public function getModuleName(): string
     {
@@ -126,5 +126,16 @@ final class WebsiteSettingsProvider implements IModuleSettingsProvider
                 description: 'Configured service POPs used by the public coverage checker.',
             ),
         ];
+    }
+
+    public function getSettingsPageMetadata(): \WorkEddy\Platform\Settings\SettingsPageMetadata
+    {
+        return new \WorkEddy\Platform\Settings\SettingsPageMetadata(
+            module: 'website',
+            label: 'Website',
+            viewPermissions: [\WorkEddy\Modules\Website\Authorization\WebsitePermissions::VIEW_SETTINGS],
+            editPermissions: [\WorkEddy\Modules\Website\Authorization\WebsitePermissions::EDIT_SETTINGS],
+            sortOrder: 200,
+        );
     }
 }

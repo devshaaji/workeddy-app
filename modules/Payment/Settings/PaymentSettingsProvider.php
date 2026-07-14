@@ -8,7 +8,7 @@ use WorkEddy\Platform\Settings\IModuleSettingsProvider;
 use WorkEddy\Platform\Settings\SettingDefinition;
 use WorkEddy\Platform\Settings\SettingType;
 
-final class PaymentSettingsProvider implements IModuleSettingsProvider
+final class PaymentSettingsProvider implements IModuleSettingsProvider, \WorkEddy\Platform\Settings\ISettingsPageProvider
 {
     public function getModuleName(): string
     {
@@ -70,5 +70,16 @@ final class PaymentSettingsProvider implements IModuleSettingsProvider
                 description: 'Default currency for payments.',
             ),
         ];
+    }
+
+    public function getSettingsPageMetadata(): \WorkEddy\Platform\Settings\SettingsPageMetadata
+    {
+        return new \WorkEddy\Platform\Settings\SettingsPageMetadata(
+            module: 'payment',
+            label: 'Payment',
+            viewPermissions: [\WorkEddy\Modules\Payment\Authorization\PaymentPermissions::RECORD_PAYMENT],
+            editPermissions: [\WorkEddy\Modules\Payment\Authorization\PaymentPermissions::RECORD_PAYMENT],
+            sortOrder: 210,
+        );
     }
 }

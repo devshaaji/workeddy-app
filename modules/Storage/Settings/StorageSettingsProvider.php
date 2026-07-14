@@ -8,7 +8,7 @@ use WorkEddy\Platform\Settings\IModuleSettingsProvider;
 use WorkEddy\Platform\Settings\SettingDefinition;
 use WorkEddy\Platform\Settings\SettingType;
 
-final class StorageSettingsProvider implements IModuleSettingsProvider
+final class StorageSettingsProvider implements IModuleSettingsProvider, \WorkEddy\Platform\Settings\ISettingsPageProvider
 {
     public function getModuleName(): string
     {
@@ -80,5 +80,16 @@ final class StorageSettingsProvider implements IModuleSettingsProvider
                 validation: fn($v) => is_array($v) && $v !== [] ? true : 'Must be a non-empty array.',
             ),
         ];
+    }
+
+    public function getSettingsPageMetadata(): \WorkEddy\Platform\Settings\SettingsPageMetadata
+    {
+        return new \WorkEddy\Platform\Settings\SettingsPageMetadata(
+            module: 'storage',
+            label: 'Storage',
+            viewPermissions: [\WorkEddy\Modules\Storage\Authorization\StoragePermissions::SETTINGS_MANAGE],
+            editPermissions: [\WorkEddy\Modules\Storage\Authorization\StoragePermissions::SETTINGS_MANAGE],
+            sortOrder: 150,
+        );
     }
 }

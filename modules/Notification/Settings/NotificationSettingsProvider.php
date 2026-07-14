@@ -8,7 +8,7 @@ use WorkEddy\Platform\Settings\IModuleSettingsProvider;
 use WorkEddy\Platform\Settings\SettingDefinition;
 use WorkEddy\Platform\Settings\SettingType;
 
-final class NotificationSettingsProvider implements IModuleSettingsProvider
+final class NotificationSettingsProvider implements IModuleSettingsProvider, \WorkEddy\Platform\Settings\ISettingsPageProvider
 {
     public function getModuleName(): string
     {
@@ -36,6 +36,7 @@ final class NotificationSettingsProvider implements IModuleSettingsProvider
                 description: 'The email address used as the sender for all outbound notifications.',
                 validation: fn($v) => filter_var($v, FILTER_VALIDATE_EMAIL) !== false
                     ? true : 'Must be a valid email address.',
+                section: 'Sender Identity',
             ),
             new SettingDefinition(
                 key: 'default_from_name',
@@ -44,6 +45,7 @@ final class NotificationSettingsProvider implements IModuleSettingsProvider
                 default: $defaultFromName,
                 label: 'Default From Name',
                 description: 'The display name used as the sender for all outbound notifications.',
+                section: 'Sender Identity',
             ),
             new SettingDefinition(
                 key: 'default_reply_to_email',
@@ -54,6 +56,7 @@ final class NotificationSettingsProvider implements IModuleSettingsProvider
                 description: 'Optional reply-to email address used for outbound email notifications.',
                 validation: static fn($v) => $v === '' || filter_var($v, FILTER_VALIDATE_EMAIL) !== false
                     ? true : 'Must be empty or a valid email address.',
+                section: 'Sender Identity',
             ),
             new SettingDefinition(
                 key: 'default_reply_to_name',
@@ -62,6 +65,7 @@ final class NotificationSettingsProvider implements IModuleSettingsProvider
                 default: $defaultReplyToName,
                 label: 'Default Reply-To Name',
                 description: 'Optional display name used for the reply-to address on outbound email notifications.',
+                section: 'Sender Identity',
             ),
 
             // --- Delivery ---
@@ -72,6 +76,7 @@ final class NotificationSettingsProvider implements IModuleSettingsProvider
                 default: true,
                 label: 'Queue Notifications',
                 description: 'Whether notifications are dispatched via the platform queue (true) or sent inline (false).',
+                section: 'Delivery',
             ),
             new SettingDefinition(
                 key: 'http_timeout_seconds',
@@ -80,6 +85,7 @@ final class NotificationSettingsProvider implements IModuleSettingsProvider
                 default: 10,
                 label: 'HTTP Timeout',
                 description: 'Maximum time in seconds to wait for a provider response.',
+                section: 'Delivery',
             ),
             new SettingDefinition(
                 key: 'http_connect_timeout_seconds',
@@ -88,6 +94,7 @@ final class NotificationSettingsProvider implements IModuleSettingsProvider
                 default: 5,
                 label: 'HTTP Connect Timeout',
                 description: 'Maximum time in seconds to wait when establishing a provider connection.',
+                section: 'Delivery',
             ),
 
             // --- Fallback & Retry Settings ---
@@ -98,6 +105,7 @@ final class NotificationSettingsProvider implements IModuleSettingsProvider
                 default: 3,
                 label: 'Max Retry Attempts',
                 description: 'Maximum number of retries for temporary provider failures.',
+                section: 'Fallback and Retry',
             ),
             new SettingDefinition(
                 key: 'retry_delay_seconds',
@@ -106,6 +114,7 @@ final class NotificationSettingsProvider implements IModuleSettingsProvider
                 default: 60,
                 label: 'Retry Delay',
                 description: 'Delay in seconds between retry attempts.',
+                section: 'Fallback and Retry',
             ),
             new SettingDefinition(
                 key: 'fallback_enabled',
@@ -114,6 +123,7 @@ final class NotificationSettingsProvider implements IModuleSettingsProvider
                 default: true,
                 label: 'Enable Fallback',
                 description: 'Whether to fallback to alternative channels when the preferred channel fails.',
+                section: 'Fallback and Retry',
             ),
 
             // --- Dynamic Provider Registry ---
@@ -124,6 +134,7 @@ final class NotificationSettingsProvider implements IModuleSettingsProvider
                 default: $providerList,
                 label: 'Provider List',
                 description: 'List of all configured notification providers and their credentials.',
+                section: 'Provider Registry',
             ),
             new SettingDefinition(
                 key: 'active_provider_per_channel',
@@ -132,6 +143,7 @@ final class NotificationSettingsProvider implements IModuleSettingsProvider
                 default: $activeProviders,
                 label: 'Active Providers per Channel',
                 description: 'Mapping of channel names (sms, whatsapp, email) to active provider keys.',
+                section: 'Provider Registry',
             ),
         ];
     }
@@ -186,5 +198,16 @@ final class NotificationSettingsProvider implements IModuleSettingsProvider
         }
 
         return in_array(strtolower((string) $value), ['1', 'true', 'yes', 'on'], true);
+    }
+
+    public function getSettingsPageMetadata(): \WorkEddy\Platform\Settings\SettingsPageMetadata
+    {
+        return new \WorkEddy\Platform\Settings\SettingsPageMetadata(
+            module: 'notification',
+            label: 'Notification',
+            viewPermissions: [\WorkEddy\Modules\Notification\Authorization\NotificationPermissions::SETTINGS_MANAGE],
+            editPermissions: [\WorkEddy\Modules\Notification\Authorization\NotificationPermissions::SETTINGS_MANAGE],
+            sortOrder: 110,
+        );
     }
 }

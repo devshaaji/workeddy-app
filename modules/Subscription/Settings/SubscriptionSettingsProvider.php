@@ -8,7 +8,7 @@ use WorkEddy\Platform\Settings\IModuleSettingsProvider;
 use WorkEddy\Platform\Settings\SettingDefinition;
 use WorkEddy\Platform\Settings\SettingType;
 
-final class SubscriptionSettingsProvider implements IModuleSettingsProvider
+final class SubscriptionSettingsProvider implements IModuleSettingsProvider, \WorkEddy\Platform\Settings\ISettingsPageProvider
 {
     public function getModuleName(): string
     {
@@ -83,5 +83,16 @@ final class SubscriptionSettingsProvider implements IModuleSettingsProvider
                 description: 'Plan code granted automatically on signup when Auto-Provision On Signup is enabled. Must match an existing active plan\'s code.',
             ),
         ];
+    }
+
+    public function getSettingsPageMetadata(): \WorkEddy\Platform\Settings\SettingsPageMetadata
+    {
+        return new \WorkEddy\Platform\Settings\SettingsPageMetadata(
+            module: 'subscription',
+            label: 'Subscription',
+            viewPermissions: [\WorkEddy\Modules\Subscription\Authorization\SubscriptionPermissions::MANAGE_PLANS],
+            editPermissions: [\WorkEddy\Modules\Subscription\Authorization\SubscriptionPermissions::MANAGE_PLANS],
+            sortOrder: 160,
+        );
     }
 }

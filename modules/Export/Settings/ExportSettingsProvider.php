@@ -8,7 +8,7 @@ use WorkEddy\Platform\Settings\IModuleSettingsProvider;
 use WorkEddy\Platform\Settings\SettingDefinition;
 use WorkEddy\Platform\Settings\SettingType;
 
-final class ExportSettingsProvider implements IModuleSettingsProvider
+final class ExportSettingsProvider implements IModuleSettingsProvider, \WorkEddy\Platform\Settings\ISettingsPageProvider
 {
     public function getModuleName(): string
     {
@@ -59,5 +59,16 @@ final class ExportSettingsProvider implements IModuleSettingsProvider
                 description: 'Current named de-identification profile applied to research exports.',
             ),
         ];
+    }
+
+    public function getSettingsPageMetadata(): \WorkEddy\Platform\Settings\SettingsPageMetadata
+    {
+        return new \WorkEddy\Platform\Settings\SettingsPageMetadata(
+            module: 'export',
+            label: 'Export',
+            viewPermissions: [\WorkEddy\Modules\Export\Authorization\ExportPermissions::GENERATE],
+            editPermissions: [\WorkEddy\Modules\Export\Authorization\ExportPermissions::GENERATE],
+            sortOrder: 270,
+        );
     }
 }

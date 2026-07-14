@@ -8,7 +8,7 @@ use WorkEddy\Platform\Settings\IModuleSettingsProvider;
 use WorkEddy\Platform\Settings\SettingDefinition;
 use WorkEddy\Platform\Settings\SettingType;
 
-final class BillingSettingsProvider implements IModuleSettingsProvider
+final class BillingSettingsProvider implements IModuleSettingsProvider, \WorkEddy\Platform\Settings\ISettingsPageProvider
 {
     public function getModuleName(): string
     {
@@ -98,5 +98,16 @@ final class BillingSettingsProvider implements IModuleSettingsProvider
                 description: 'Tax or VAT ID displayed on invoices and quotations.',
             ),
         ];
+    }
+
+    public function getSettingsPageMetadata(): \WorkEddy\Platform\Settings\SettingsPageMetadata
+    {
+        return new \WorkEddy\Platform\Settings\SettingsPageMetadata(
+            module: 'billing',
+            label: 'Billing',
+            viewPermissions: [\WorkEddy\Modules\Billing\Authorization\BillingPermissions::VIEW_BILLING],
+            editPermissions: [\WorkEddy\Modules\Billing\Authorization\BillingPermissions::MANAGE_INVOICES],
+            sortOrder: 130,
+        );
     }
 }

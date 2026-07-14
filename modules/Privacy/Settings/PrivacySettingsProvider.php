@@ -8,7 +8,7 @@ use WorkEddy\Platform\Settings\IModuleSettingsProvider;
 use WorkEddy\Platform\Settings\SettingDefinition;
 use WorkEddy\Platform\Settings\SettingType;
 
-final class PrivacySettingsProvider implements IModuleSettingsProvider
+final class PrivacySettingsProvider implements IModuleSettingsProvider, \WorkEddy\Platform\Settings\ISettingsPageProvider
 {
     public function getModuleName(): string
     {
@@ -45,5 +45,16 @@ final class PrivacySettingsProvider implements IModuleSettingsProvider
                 description: 'Whether all video access events must be recorded in the access log.',
             ),
         ];
+    }
+
+    public function getSettingsPageMetadata(): \WorkEddy\Platform\Settings\SettingsPageMetadata
+    {
+        return new \WorkEddy\Platform\Settings\SettingsPageMetadata(
+            module: 'privacy',
+            label: 'Privacy',
+            viewPermissions: [\WorkEddy\Modules\Privacy\Authorization\PrivacyPermissions::RETENTION_MANAGE],
+            editPermissions: [\WorkEddy\Modules\Privacy\Authorization\PrivacyPermissions::RETENTION_MANAGE],
+            sortOrder: 190,
+        );
     }
 }

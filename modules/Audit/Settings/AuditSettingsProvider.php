@@ -12,7 +12,7 @@ use WorkEddy\Platform\Settings\IModuleSettingsProvider;
 use WorkEddy\Platform\Settings\SettingDefinition;
 use WorkEddy\Platform\Settings\SettingType;
 
-final class AuditSettingsProvider implements IModuleSettingsProvider
+final class AuditSettingsProvider implements IModuleSettingsProvider, \WorkEddy\Platform\Settings\ISettingsPageProvider
 {
     public function getModuleName(): string
     {
@@ -68,5 +68,16 @@ final class AuditSettingsProvider implements IModuleSettingsProvider
                     ? true : 'Must be between 10 and 10000.',
             ),
         ];
+    }
+
+    public function getSettingsPageMetadata(): \WorkEddy\Platform\Settings\SettingsPageMetadata
+    {
+        return new \WorkEddy\Platform\Settings\SettingsPageMetadata(
+            module: 'audit',
+            label: 'Audit',
+            viewPermissions: [\WorkEddy\Modules\Audit\Authorization\AuditPermissions::SETTINGS_MANAGE],
+            editPermissions: [\WorkEddy\Modules\Audit\Authorization\AuditPermissions::SETTINGS_MANAGE],
+            sortOrder: 120,
+        );
     }
 }

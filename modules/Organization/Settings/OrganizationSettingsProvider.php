@@ -8,7 +8,7 @@ use WorkEddy\Platform\Settings\IModuleSettingsProvider;
 use WorkEddy\Platform\Settings\SettingDefinition;
 use WorkEddy\Platform\Settings\SettingType;
 
-final class OrganizationSettingsProvider implements IModuleSettingsProvider
+final class OrganizationSettingsProvider implements IModuleSettingsProvider, \WorkEddy\Platform\Settings\ISettingsPageProvider
 {
     public function getModuleName(): string
     {
@@ -47,5 +47,16 @@ final class OrganizationSettingsProvider implements IModuleSettingsProvider
                 description: 'Whether departments may reference parent departments within the same organization.',
             ),
         ];
+    }
+
+    public function getSettingsPageMetadata(): \WorkEddy\Platform\Settings\SettingsPageMetadata
+    {
+        return new \WorkEddy\Platform\Settings\SettingsPageMetadata(
+            module: 'organization',
+            label: 'Organization',
+            viewPermissions: [\WorkEddy\Modules\Organization\Authorization\OrganizationPermissions::MANAGE],
+            editPermissions: [\WorkEddy\Modules\Organization\Authorization\OrganizationPermissions::MANAGE],
+            sortOrder: 170,
+        );
     }
 }

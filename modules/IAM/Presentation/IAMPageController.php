@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace WorkEddy\Modules\IAM\Presentation;
 
-use WorkEddy\Modules\IAM\Authorization\IAMPermissions;
 use WorkEddy\Platform\Http\Request;
 use WorkEddy\Platform\Http\Response;
 use WorkEddy\Platform\Session\ISessionService;
 use WorkEddy\Platform\Session\UserContext;
 use WorkEddy\Modules\IAM\Application\LogoutUseCase;
+use WorkEddy\Modules\IAM\Authorization\IAMPermissions;
 use WorkEddy\Modules\IAM\Domain\Contracts\IPermissionService;
 use WorkEddy\Shared\Presentation\ViewRenderer;
 
@@ -186,8 +186,14 @@ final class IAMPageController
     public function settings(Request $request): Response
     {
         $vars = $request->routeParams;
-        $this->requirePrivilege(IAMPermissions::SETTINGS_MANAGE);
-        return $this->render('Settings/index.php', $vars, $this->pageData->settings());
+        $ctx = $this->context();
+        $requestedModule = trim((string) ($request->query('module') ?? ''));
+        $pageMetadata = $requestedModule !== '' ? $this->pageData->settingsPageMetadata($requestedModule) : null;
+        if ($requestedModule !== '' && ($pageMetadata === null || !$pageMetadata->canView($ctx))) {
+            return $this->views->renderScopeErrorPage('You do not have access to this settings module in the current scope.');
+        }
+
+        return $this->render('Settings/index.php', $vars, $this->pageData->settings($ctx, $requestedModule));
     }
 
     private function render(string $view, array $vars, array $data = []): Response

@@ -274,7 +274,11 @@ final class PlatformServiceProvider implements ModuleServiceProviderInterface
             SymfonyConsoleFactory::class => static fn(): SymfonyConsoleFactory => new SymfonyConsoleFactory(),
             ConsoleApplicationFactory::class => static fn(): ConsoleApplicationFactory => new ConsoleApplicationFactory(),
             MigrationConfigurationFactory::class => static fn(ContainerInterface $c): MigrationConfigurationFactory => new MigrationConfigurationFactory($c->get(ConfigLoader::class)),
-            ViewRenderer::class => static fn(ContainerInterface $c): ViewRenderer => new ViewRenderer($c->get(ConfigLoader::class), $c->get(ISessionService::class)),
+            ViewRenderer::class => static fn(ContainerInterface $c): ViewRenderer => new ViewRenderer(
+                $c->get(ConfigLoader::class),
+                $c->get(ISessionService::class),
+                $c->get(\WorkEddy\Platform\Settings\SettingsRegistry::class),
+            ),
         ];
     }
 

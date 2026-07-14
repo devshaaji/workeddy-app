@@ -8,7 +8,7 @@ use WorkEddy\Platform\Settings\IModuleSettingsProvider;
 use WorkEddy\Platform\Settings\SettingDefinition;
 use WorkEddy\Platform\Settings\SettingType;
 
-final class ErgonomicsSettingsProvider implements IModuleSettingsProvider
+final class ErgonomicsSettingsProvider implements IModuleSettingsProvider, \WorkEddy\Platform\Settings\ISettingsPageProvider
 {
     public function getModuleName(): string
     {
@@ -37,5 +37,16 @@ final class ErgonomicsSettingsProvider implements IModuleSettingsProvider
                 description: 'Whether scoring model metadata can advertise video-supported scoring inputs.',
             ),
         ];
+    }
+
+    public function getSettingsPageMetadata(): \WorkEddy\Platform\Settings\SettingsPageMetadata
+    {
+        return new \WorkEddy\Platform\Settings\SettingsPageMetadata(
+            module: 'ergonomics',
+            label: 'Ergonomics',
+            viewPermissions: [\WorkEddy\Modules\Ergonomics\Authorization\ErgonomicsPermissions::VIEW_MODELS],
+            editPermissions: [\WorkEddy\Modules\Ergonomics\Authorization\ErgonomicsPermissions::VIEW_MODELS],
+            sortOrder: 260,
+        );
     }
 }

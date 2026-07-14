@@ -8,12 +8,12 @@ declare(strict_types=1);
 
 namespace WorkEddy\Modules\IAM\Presentation;
 
-use WorkEddy\Modules\IAM\Authorization\IAMPermissions;
 use WorkEddy\Platform\Settings\SettingsRegistry;
 use WorkEddy\Platform\Settings\SettingsService;
 use WorkEddy\Platform\Session\ISessionService;
 use WorkEddy\Modules\IAM\Domain\Contracts\IPermissionService;
 use WorkEddy\Platform\Http\Request;
+use WorkEddy\Shared\Exceptions\ForbiddenException;
 use WorkEddy\Shared\Exceptions\ValidationException;
 
 final class SettingsController
@@ -32,8 +32,6 @@ final class SettingsController
             return ['status' => 'error', 'message' => 'Unauthenticated'];
         }
 
-        $this->permissions->requirePrivilege($ctx, IAMPermissions::SETTINGS_MANAGE);
-
         $result = [];
         $requestedModule = $request->query('module');
         $modules = $requestedModule !== null && trim((string) $requestedModule) !== ''
@@ -41,6 +39,10 @@ final class SettingsController
             : $this->registry->getRegisteredModules();
 
         foreach ($modules as $module) {
+            $metadata = $this->registry->getPageMetadata($module);
+            if ($metadata === null || !$metadata->canView($ctx)) {
+                continue;
+            }
             $definitions = $this->registry->getForModule($module);
             $values = $this->settingsService->getAllForModule($module);
 
@@ -67,7 +69,6 @@ final class SettingsController
         if ($ctx === null) {
             return ['status' => 'error', 'message' => 'Unauthenticated'];
         }
-        $this->permissions->requirePrivilege($ctx, IAMPermissions::SETTINGS_MANAGE);
 
         $body = array_replace($request->body, $request->json);
         if (!array_key_exists('value', $body)) {
@@ -78,7 +79,8 @@ final class SettingsController
         $key = $request->routeParam('key');
         $qualifiedKey = $module . '.' . $key;
 
-        $this->settingsService->set($qualifiedKey, $body['value'], $ctx->userId);
+        $this->requireModuleEditAccess($ctx, (string) $module);
+        $this->settingsService->set($qualifiedKey, $body['value'], (string) $ctx->userId);
 
         return ['status' => 'ok', 'data' => [
             'key' => $qualifiedKey,
@@ -91,7 +93,6 @@ final class SettingsController
         if ($ctx === null) {
             return ['status' => 'error', 'message' => 'Unauthenticated'];
         }
-        $this->permissions->requirePrivilege($ctx, IAMPermissions::SETTINGS_MANAGE);
 
         $body = array_replace($request->body, $request->json);
         $values = $body['values'] ?? $body;
@@ -104,7 +105,8 @@ final class SettingsController
             throw new ValidationException(['module' => 'Module is required.']);
         }
 
-        $this->settingsService->setMany($module, $values, $ctx->userId);
+        $this->requireModuleEditAccess($ctx, $module);
+        $this->settingsService->setMany($module, $values, (string) $ctx->userId);
 
         return ['status' => 'ok', 'data' => [
             'module' => $module,
@@ -118,13 +120,13 @@ final class SettingsController
         if ($ctx === null) {
             return ['status' => 'error', 'message' => 'Unauthenticated'];
         }
-        $this->permissions->requirePrivilege($ctx, IAMPermissions::SETTINGS_MANAGE);
 
         $module = $request->routeParam('module', '');
         $key = $request->routeParam('key', '');
         $qualifiedKey = $module . '.' . $key;
 
-        $this->settingsService->reset($qualifiedKey, $ctx->userId);
+        $this->requireModuleEditAccess($ctx, (string) $module);
+        $this->settingsService->reset($qualifiedKey, (string) $ctx->userId);
 
         return ['status' => 'ok', 'data' => [
             'key' => $qualifiedKey,
@@ -137,7 +139,6 @@ final class SettingsController
         if ($ctx === null) {
             return ['status' => 'error', 'message' => 'Unauthenticated'];
         }
-        $this->permissions->requirePrivilege($ctx, IAMPermissions::SETTINGS_MANAGE);
 
         $body = array_replace($request->body, $request->json);
         $keys = $body['keys'] ?? [];
@@ -150,18 +151,27 @@ final class SettingsController
             throw new ValidationException(['module' => 'Module is required.']);
         }
 
+        $this->requireModuleEditAccess($ctx, $module);
         foreach ($keys as $key) {
             $key = trim((string) $key);
             if ($key === '') {
                 continue;
             }
 
-            $this->settingsService->reset($module . '.' . $key, $ctx->userId);
+            $this->settingsService->reset($module . '.' . $key, (string) $ctx->userId);
         }
 
         return ['status' => 'ok', 'data' => [
             'module' => $module,
             'values' => $this->settingsService->getAllForModule($module),
         ]];
+    }
+
+    private function requireModuleEditAccess(\WorkEddy\Platform\Session\UserContext $ctx, string $module): void
+    {
+        $metadata = $this->registry->getPageMetadata($module);
+        if ($metadata === null || !$metadata->canEdit($ctx)) {
+            throw new ForbiddenException('You do not have permission to update settings for this module.');
+        }
     }
 }

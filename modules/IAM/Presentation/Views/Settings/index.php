@@ -1,236 +1,279 @@
 <?php
 $v2Root = dirname(__DIR__, 5);
-$pageTitle = 'IAM Settings';
-$pagePurpose = 'Configure password policy, session policy, and account defaults.';
-$pageScripts = ['js/iam.js'];
+$settingsModules = $settingsModules ?? [];
+$activeModule = $activeSettingsModule ?? null;
 $settings = $settings ?? [];
-$can = $can ?? [];
 $settingDefinitions = $settingDefinitions ?? [];
+$pageTitle = ($activeModule['label'] ?? 'Platform') . ' Settings';
+$pagePurpose = 'Platform';
+$pageCss = ['css/modules/settings-page.css'];
+$pageScripts = ['js/modules/settings-page.js'];
 $e = static fn(mixed $value): string => htmlspecialchars((string) ($value ?? ''), ENT_QUOTES, 'UTF-8');
-$default = static function (string $key, mixed $fallback = null) use ($settingDefinitions): mixed {
-    foreach ($settingDefinitions as $definition) {
-        if (($definition->key ?? null) === $key) {
-            return $definition->default;
-        }
-    }
+$moduleKey = (string) ($activeModule['key'] ?? '');
+$canEdit = !empty($activeModule['canEdit']);
+$sectionId = static function (string $label): string {
+    $slug = strtolower(trim($label));
+    $slug = preg_replace('/[^a-z0-9]+/', '-', $slug ?? '');
+    $slug = trim((string) $slug, '-');
 
-    return $fallback;
+    return $slug !== '' ? 'settings-section-' . $slug : 'settings-section-general';
 };
-$checked = static fn(mixed $value): string => $value ? ' checked' : '';
-$jsonDefault = static fn(string $key, mixed $fallback = []): string => htmlspecialchars(json_encode($default($key, $fallback), JSON_THROW_ON_ERROR), ENT_QUOTES, 'UTF-8');
-$listValue = static function (mixed $value): string {
+
+$formatJson = static function (mixed $value): string {
     if (is_string($value)) {
         $decoded = json_decode($value, true);
-        $value = is_array($decoded) ? $decoded : preg_split('/[\r\n,]+/', $value);
-    }
-    if (!is_array($value)) {
-        return '';
+        $value = json_last_error() === JSON_ERROR_NONE ? $decoded : $value;
     }
 
-    return implode("\n", array_values(array_filter(array_map(
-        static fn(mixed $item): string => trim((string) $item),
-        $value,
-    ), static fn(string $item): bool => $item !== '')));
+    if (!is_array($value)) {
+        return (string) $value;
+    }
+
+    return json_encode($value, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?: '';
 };
+
+$fieldValue = static function (object $definition, array $settings) use ($formatJson): string {
+    $value = $settings[$definition->key] ?? $definition->default;
+
+    return match ($definition->type->value) {
+        'boolean' => $value ? '1' : '0',
+        'json' => $formatJson($value),
+        default => (string) $value,
+    };
+};
+
+$tooltipText = static function (object $definition): string {
+    $parts = [];
+    $description = trim((string) ($definition->description ?? ''));
+    if ($description !== '') {
+        $parts[] = $description;
+    }
+    if (!empty($definition->restartRequired)) {
+        $parts[] = 'Restart required after changes.';
+    }
+    if (empty($definition->editable)) {
+        $parts[] = 'This setting is read-only.';
+    }
+
+    return implode(' ', $parts);
+};
+
+$groupedDefinitions = [];
+foreach ($settingDefinitions as $definition) {
+    $section = trim((string) ($definition->section ?? ''));
+    if ($section === '') {
+        $section = 'General';
+    }
+
+    $groupedDefinitions[$section][] = $definition;
+}
+
+$activeSectionEntries = [];
+foreach ($groupedDefinitions as $sectionLabel => $sectionDefinitions) {
+    $activeSectionEntries[] = [
+        'id' => $sectionId($sectionLabel),
+        'label' => $sectionLabel,
+    ];
+}
+
 require $v2Root . '/shared/Views/Partials/page_header.php';
 ?>
 
-<form id="iam-settings-form" class="row g-4" data-iam-screen="settings" method="POST" action="/api/v1/settings/iam">
-    <div class="col-12">
-        <div class="card mb-4">
-            <div class="card-header">
-                <h3 class="card-title mb-0">Password Policy</h3>
-            </div>
-            <div class="card-body">
-                <div class="row g-4">
-                    <div class="col-md-6">
-                        <label class="form-label" for="min_password_length">Minimum password length</label>
-                        <input type="number" id="min_password_length" name="min_password_length" class="form-control" value="<?= $e($settings['min_password_length'] ?? 8) ?>" data-default="<?= $e($default('min_password_length', 8)) ?>" min="6" max="128">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label" for="min_username_length">Minimum username length</label>
-                        <input type="number" id="min_username_length" name="min_username_length" class="form-control" value="<?= $e($settings['min_username_length'] ?? 3) ?>" data-default="<?= $e($default('min_username_length', 3)) ?>" min="2" max="32">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label" for="password_algorithm">Password hashing algorithm</label>
-                        <input type="text" id="password_algorithm" class="form-control" value="<?= $e($settings['password_algorithm'] ?? 'argon2id') ?>" readonly>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label" for="argon2_memory_cost">Argon2 memory cost</label>
-                        <input type="number" id="argon2_memory_cost" class="form-control" value="<?= $e($settings['argon2_memory_cost'] ?? 65536) ?>" readonly>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label" for="argon2_time_cost">Argon2 time cost</label>
-                        <input type="number" id="argon2_time_cost" class="form-control" value="<?= $e($settings['argon2_time_cost'] ?? 4) ?>" readonly>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label" for="argon2_threads">Argon2 threads</label>
-                        <input type="number" id="argon2_threads" class="form-control" value="<?= $e($settings['argon2_threads'] ?? 1) ?>" readonly>
-                    </div>
+<div class="row g-4" data-settings-screen="module-settings">
+    <div class="col-xl-3 col-lg-4 d-none d-lg-block">
+        <div class="settings-nav-sticky">
+            <div class="card bg-transparent border-0 settings-nav-card">
+                <div class="card-header pb-2">
+                    <span class="badge bg-label-primary mb-2">Settings Navigator</span>
                 </div>
-            </div>
-        </div>
+                <div class="card-body pt-2">
+                    <ul class="timeline settings-nav-timeline mb-0 py-3">
+                        <?php foreach ($settingsModules as $index => $module): ?>
+                            <?php
+                            $isActiveModule = ($module['key'] ?? '') === $moduleKey;
+                            $moduleUrl = (string) ($module['url'] ?? '#');
+                            $pointClass = match ($index % 5) {
+                                0 => 'timeline-point-primary',
+                                1 => 'timeline-point-success',
+                                2 => 'timeline-point-info',
+                                3 => 'timeline-point-warning',
+                                default => 'timeline-point-secondary',
+                            };
+                            ?>
+                            <li class="timeline-item timeline-item-transparent<?= $isActiveModule ? ' settings-nav-item-active' : ' border-dashed' ?>">
+                                <span class="timeline-point <?= $pointClass ?>"></span>
+                                <div class="timeline-event">
+                                    <div class="timeline-header align-items-start">
+                                        <div class="settings-nav-module">
+                                            <a href="<?= $e($moduleUrl) ?>" class="settings-nav-link <?= $isActiveModule ? 'fw-bold ' : '' ?> <?= $isActiveModule ? 'active' : '' ?>">
+                                                <?= $e($module['label'] ?? '') ?>
+                                            </a>
+                                        </div>
+                                    </div>
 
-        <div class="card mb-4">
-            <div class="card-header">
-                <h3 class="card-title mb-0">Session Policy</h3>
-            </div>
-            <div class="card-body">
-                <div class="row g-4">
-                    <div class="col-md-4">
-                        <label class="form-label" for="session_lifetime_minutes">Session lifetime</label>
-                        <div class="input-group">
-                            <input type="number" id="session_lifetime_minutes" name="session_lifetime_minutes" class="form-control" value="<?= $e($settings['session_lifetime_minutes'] ?? 120) ?>" data-default="<?= $e($default('session_lifetime_minutes', 120)) ?>" min="5" max="1440">
-                            <span class="input-group-text">minutes</span>
-                        </div>
-                        <div class="form-text">Configured maximum session lifetime setting.</div>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label" for="max_login_attempts">Max login attempts</label>
-                        <input type="number" id="max_login_attempts" name="max_login_attempts" class="form-control" value="<?= $e($settings['max_login_attempts'] ?? 5) ?>" data-default="<?= $e($default('max_login_attempts', 5)) ?>" min="3" max="20">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label" for="lockout_duration_minutes">Lockout duration</label>
-                        <div class="input-group">
-                            <input type="number" id="lockout_duration_minutes" name="lockout_duration_minutes" class="form-control" value="<?= $e($settings['lockout_duration_minutes'] ?? 15) ?>" data-default="<?= $e($default('lockout_duration_minutes', 15)) ?>" min="1" max="1440">
-                            <span class="input-group-text">minutes</span>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label" for="auth_session_idle_timeout">Idle timeout</label>
-                        <div class="input-group">
-                            <input type="number" id="auth_session_idle_timeout" name="auth.session_idle_timeout" class="form-control" value="<?= $e($settings['auth.session_idle_timeout'] ?? 1800) ?>" data-default="<?= $e($default('auth.session_idle_timeout', 1800)) ?>" min="60" max="86400">
-                            <span class="input-group-text">seconds</span>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label" for="auth_session_warning_threshold">Warning threshold</label>
-                        <div class="input-group">
-                            <input type="number" id="auth_session_warning_threshold" name="auth.session_warning_threshold" class="form-control" value="<?= $e($settings['auth.session_warning_threshold'] ?? 300) ?>" data-default="<?= $e($default('auth.session_warning_threshold', 300)) ?>" min="30" max="3600">
-                            <span class="input-group-text">seconds</span>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label" for="auth_session_absolute_timeout">Absolute timeout</label>
-                        <div class="input-group">
-                            <input type="number" id="auth_session_absolute_timeout" name="auth.session_absolute_timeout" class="form-control" value="<?= $e($settings['auth.session_absolute_timeout'] ?? 28800) ?>" data-default="<?= $e($default('auth.session_absolute_timeout', 28800)) ?>" min="300" max="604800">
-                            <span class="input-group-text">seconds</span>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="form-check form-switch mt-md-6">
-                            <input class="form-check-input" type="checkbox" id="auth_session_absolute_timeout_enabled" name="auth.session_absolute_timeout_enabled" data-default="<?= $default('auth.session_absolute_timeout_enabled', false) ? '1' : '0' ?>"<?= $checked($settings['auth.session_absolute_timeout_enabled'] ?? false) ?>>
-                            <label class="form-check-label" for="auth_session_absolute_timeout_enabled">Enable absolute timeout</label>
-                            <div class="form-text">Force re-authentication after the absolute timeout, even when active.</div>
-                        </div>
-                    </div>
+                                    <?php if ($isActiveModule && $activeSectionEntries !== []): ?>
+                                        <div class="settings-nav-sections">
+                                            <ul class="timeline settings-nav-subtimeline mb-0">
+                                                <?php foreach ($activeSectionEntries as $sectionIndex => $section): ?>
+                                                    <?php
+                                                    $sectionPointClass = match ($sectionIndex % 4) {
+                                                        0 => 'timeline-point-primary',
+                                                        1 => 'timeline-point-success',
+                                                        2 => 'timeline-point-info',
+                                                        default => 'timeline-point-warning',
+                                                    };
+                                                    ?>
+                                                    <li class="timeline-item timeline-item-transparent border-dashed">
+                                                        <span class="timeline-point <?= $sectionPointClass ?>"></span>
+                                                        <div class="timeline-event">
+                                                            <a class="settings-nav-section-link" href="#<?= $e($section['id']) ?>">
+                                                                <span><?= $e($section['label']) ?></span>
+                                                            </a>
+                                                        </div>
+                                                    </li>
+                                                <?php endforeach; ?>
+                                            </ul>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
                 </div>
-            </div>
-        </div>
-
-        <div class="card mb-4">
-            <div class="card-header">
-                <h3 class="card-title mb-0">Authentication Controls</h3>
-            </div>
-            <div class="card-body">
-                <div class="row g-4">
-                    <div class="col-md-6">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="auth_otp_enabled" name="auth_otp_enabled" data-default="<?= $default('auth_otp_enabled', false) ? '1' : '0' ?>"<?= $checked($settings['auth_otp_enabled'] ?? false) ?>>
-                            <label class="form-check-label" for="auth_otp_enabled">Require OTP at sign in</label>
-                            <div class="form-text">Successful password login must be verified with a one-time code.</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="password_reset_enabled" name="password_reset_enabled" data-default="<?= $default('password_reset_enabled', true) ? '1' : '0' ?>"<?= $checked($settings['password_reset_enabled'] ?? true) ?>>
-                            <label class="form-check-label" for="password_reset_enabled">Allow password reset</label>
-                            <div class="form-text">Users can request and complete password resets.</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title mb-0">Account Defaults</h3>
-            </div>
-            <div class="card-body">
-                <div class="row g-4">
-                    <div class="col-12">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="default_user_status_active" name="default_user_status_active" data-default="<?= $default('default_user_status_active', true) ? '1' : '0' ?>"<?= $checked(!empty($settings['default_user_status_active'])) ?>>
-                            <label class="form-check-label" for="default_user_status_active">New users are active by default</label>
-                        </div>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label" for="public_registration_allowed_roles">Public registration allowed roles</label>
-                        <textarea id="public_registration_allowed_roles" name="public_registration_allowed_roles" class="form-control" rows="3" data-setting-type="json-list" data-default="<?= $jsonDefault('public_registration_allowed_roles', []) ?>" placeholder="One role slug per line"><?= $e($listValue($settings['public_registration_allowed_roles'] ?? [])) ?></textarea>
-                        <div class="form-text">Role slugs that public registration can request. Leave empty to disable public registration.</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card mt-4">
-            <div class="card-header">
-                <h3 class="card-title mb-0">IAM Notifications</h3>
-            </div>
-            <div class="card-body">
-                <div class="row g-4">
-                    <div class="col-md-6">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="notification_user_created_enabled" name="notifications.iam.user_created.enabled" data-default="<?= $default('notifications.iam.user_created.enabled', true) ? '1' : '0' ?>"<?= $checked($settings['notifications.iam.user_created.enabled'] ?? true) ?>>
-                            <label class="form-check-label" for="notification_user_created_enabled">User account created</label>
-                            <div class="form-text">Notify a user when their account is created.</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="notification_user_activated_enabled" name="notifications.iam.user_activated.enabled" data-default="<?= $default('notifications.iam.user_activated.enabled', true) ? '1' : '0' ?>"<?= $checked($settings['notifications.iam.user_activated.enabled'] ?? true) ?>>
-                            <label class="form-check-label" for="notification_user_activated_enabled">User account activated</label>
-                            <div class="form-text">Notify a user when their account is activated.</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="notification_user_suspended_enabled" name="notifications.iam.user_suspended.enabled" data-default="<?= $default('notifications.iam.user_suspended.enabled', true) ? '1' : '0' ?>"<?= $checked($settings['notifications.iam.user_suspended.enabled'] ?? true) ?>>
-                            <label class="form-check-label" for="notification_user_suspended_enabled">User account suspended</label>
-                            <div class="form-text">Notify a user when their account is suspended.</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="notification_role_assigned_enabled" name="notifications.iam.role_assigned.enabled" data-default="<?= $default('notifications.iam.role_assigned.enabled', true) ? '1' : '0' ?>"<?= $checked($settings['notifications.iam.role_assigned.enabled'] ?? true) ?>>
-                            <label class="form-check-label" for="notification_role_assigned_enabled">Role assigned</label>
-                            <div class="form-text">Notify a user when their role changes.</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="notification_force_logout_enabled" name="notifications.iam.force_logout.enabled" data-default="<?= $default('notifications.iam.force_logout.enabled', true) ? '1' : '0' ?>"<?= $checked($settings['notifications.iam.force_logout.enabled'] ?? true) ?>>
-                            <label class="form-check-label" for="notification_force_logout_enabled">Sessions ended</label>
-                            <div class="form-text">Notify a user when active sessions are ended.</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="notification_password_changed_enabled" name="notifications.iam.password_changed.enabled" data-default="<?= $default('notifications.iam.password_changed.enabled', true) ? '1' : '0' ?>"<?= $checked($settings['notifications.iam.password_changed.enabled'] ?? true) ?>>
-                            <label class="form-check-label" for="notification_password_changed_enabled">Password changed</label>
-                            <div class="form-text">Notify a user when their password is changed.</div>
-                        </div>
-                    </div>
-
-                </div>
-                <div id="iam-settings-feedback" class="d-none mt-4" data-form-feedback></div>
-                <?php if (!empty($can['manageSettings'])): ?>
-                    <div class="text-end mt-4">
-                        <button type="button" class="btn btn-outline-secondary me-2" id="iam-settings-reset" data-iam-settings-reset>Reset Defaults</button>
-                        <button type="submit" class="btn btn-primary" id="iam-settings-save">Save Settings</button>
-                    </div>
-                <?php endif; ?>
             </div>
         </div>
     </div>
-</form>
+
+    <div class="col-xl-9 col-lg-8">
+        <form
+            id="platform-settings-form"
+            method="post"
+            action="/api/v1/settings/<?= $e($moduleKey) ?>"
+            data-settings-module="<?= $e($moduleKey) ?>">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <div>
+                        <h3 class="card-title mb-1"><?= $e($activeModule['label'] ?? 'Module') ?> Settings</h3>
+                        <div class="text-secondary">Registry-backed configuration for this module.</div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <?php if ($settingDefinitions === []): ?>
+                        <div class="text-muted">No settings are registered for this module.</div>
+                    <?php else: ?>
+                        <div class="d-flex flex-column gap-4">
+                            <?php foreach ($groupedDefinitions as $sectionLabel => $sectionDefinitions): ?>
+                                <section id="<?= $e($sectionId($sectionLabel)) ?>" class="border rounded-3 p-3 p-lg-4">
+                                    <div class="mb-3">
+                                        <h4 class="h6 mb-1"><?= $e($sectionLabel) ?></h4>
+                                        <div class="text-secondary small"><?= count($sectionDefinitions) ?> setting<?= count($sectionDefinitions) === 1 ? '' : 's' ?></div>
+                                    </div>
+
+                                    <div class="row g-4">
+                                        <?php foreach ($sectionDefinitions as $definition): ?>
+                                            <?php
+                                            $value = $fieldValue($definition, $settings);
+                                            $helpText = $tooltipText($definition);
+                                            $isBool = $definition->type->value === 'boolean';
+                                            $isJson = $definition->type->value === 'json';
+                                            $isNumber = in_array($definition->type->value, ['integer', 'float'], true);
+                                            $isLongText = !$isJson && $definition->type->value === 'string' && (strlen((string) $value) > 120 || str_contains((string) $value, "\n"));
+                                            ?>
+                                            <div class="col-12<?= $isBool ? '' : ($isJson || $isLongText ? '' : ' col-md-6') ?>">
+                                                <?php if ($isBool): ?>
+                                                    <div class="form-check form-switch">
+                                                        <input
+                                                            class="form-check-input"
+                                                            type="checkbox"
+                                                            id="setting-<?= $e($definition->key) ?>"
+                                                            name="<?= $e($definition->key) ?>"
+                                                            value="1"
+                                                            data-setting-type="boolean"
+                                                            data-default="<?= $definition->default ? '1' : '0' ?>"
+                                                            <?= !empty($settings[$definition->key]) ? 'checked' : '' ?>
+                                                            <?= !$definition->editable || !$canEdit ? 'disabled' : '' ?>>
+                                                        <label class="form-check-label d-inline-flex align-items-center gap-2" for="setting-<?= $e($definition->key) ?>">
+                                                            <span><?= $e($definition->label ?: $definition->key) ?></span>
+                                                            <?php if ($helpText !== ''): ?>
+                                                                <button
+                                                                    type="button"
+                                                                    class="btn btn-sm btn-icon p-0 border-0 bg-transparent text-muted"
+                                                                    data-bs-toggle="tooltip"
+                                                                    data-bs-placement="top"
+                                                                    data-bs-title="<?= $e($helpText) ?>"
+                                                                    aria-label="Help for <?= $e($definition->label ?: $definition->key) ?>">
+                                                                    <i class="bi bi-info-circle"></i>
+                                                                </button>
+                                                            <?php endif; ?>
+                                                        </label>
+                                                    </div>
+                                                <?php elseif ($isJson || $isLongText): ?>
+                                                    <label class="form-label d-inline-flex align-items-center gap-2" for="setting-<?= $e($definition->key) ?>">
+                                                        <span><?= $e($definition->label ?: $definition->key) ?></span>
+                                                        <?php if ($helpText !== ''): ?>
+                                                            <button
+                                                                type="button"
+                                                                class="btn btn-sm btn-icon p-0 border-0 bg-transparent text-muted"
+                                                                data-bs-toggle="tooltip"
+                                                                data-bs-placement="top"
+                                                                data-bs-title="<?= $e($helpText) ?>"
+                                                                aria-label="Help for <?= $e($definition->label ?: $definition->key) ?>">
+                                                                <i class="bi bi-info-circle"></i>
+                                                            </button>
+                                                        <?php endif; ?>
+                                                    </label>
+                                                    <textarea
+                                                        id="setting-<?= $e($definition->key) ?>"
+                                                        name="<?= $e($definition->key) ?>"
+                                                        class="form-control"
+                                                        rows="<?= $isJson ? '8' : '4' ?>"
+                                                        data-setting-type="<?= $e($definition->type->value) ?>"
+                                                        data-default="<?= $e($isJson ? $formatJson($definition->default) : (string) $definition->default) ?>"
+                                                        <?= !$definition->editable || !$canEdit ? 'disabled' : '' ?>><?= $e($value) ?></textarea>
+                                                <?php else: ?>
+                                                    <label class="form-label d-inline-flex align-items-center gap-2" for="setting-<?= $e($definition->key) ?>">
+                                                        <span><?= $e($definition->label ?: $definition->key) ?></span>
+                                                        <?php if ($helpText !== ''): ?>
+                                                            <button
+                                                                type="button"
+                                                                class="btn btn-sm btn-icon p-0 border-0 bg-transparent text-muted"
+                                                                data-bs-toggle="tooltip"
+                                                                data-bs-placement="top"
+                                                                data-bs-title="<?= $e($helpText) ?>"
+                                                                aria-label="Help for <?= $e($definition->label ?: $definition->key) ?>">
+                                                                <i class="bi bi-info-circle"></i>
+                                                            </button>
+                                                        <?php endif; ?>
+                                                    </label>
+                                                    <input
+                                                        type="<?= $isNumber ? 'number' : 'text' ?>"
+                                                        id="setting-<?= $e($definition->key) ?>"
+                                                        name="<?= $e($definition->key) ?>"
+                                                        class="form-control"
+                                                        value="<?= $e($value) ?>"
+                                                        data-setting-type="<?= $e($definition->type->value) ?>"
+                                                        data-default="<?= $e((string) $definition->default) ?>"
+                                                        <?= $definition->type->value === 'float' ? 'step="any"' : '' ?>
+                                                        <?= !$definition->editable || !$canEdit ? 'disabled' : '' ?>>
+                                                <?php endif; ?>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </section>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <div id="platform-settings-feedback" class="d-none mb-4" data-form-feedback></div>
+
+            <?php if ($canEdit && $settingDefinitions !== []): ?>
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-outline-secondary" id="platform-settings-reset">Reset Defaults</button>
+                    <button type="submit" class="btn btn-primary">Save Settings</button>
+                </div>
+            <?php endif; ?>
+        </form>
+    </div>
+</div>

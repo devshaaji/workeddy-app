@@ -11,7 +11,7 @@ $breadcrumbs = [
 ];
 $pageActions = [
     ['label' => 'Logs', 'url' => '/notifications/logs', 'class' => 'btn btn-outline-secondary', 'icon' => 'journal-text'],
-    ['label' => 'Settings', 'url' => '/notifications/settings', 'class' => 'btn btn-outline-secondary', 'icon' => 'gear'],
+    ['label' => 'Settings', 'url' => '/settings/page?module=notification', 'class' => 'btn btn-outline-secondary', 'icon' => 'gear'],
 ];
 $pageScripts = ['js/modules/notification.js'];
 require $v2Root . '/shared/Views/Partials/page_header.php';

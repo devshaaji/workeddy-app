@@ -8,7 +8,7 @@ use WorkEddy\Platform\Settings\IModuleSettingsProvider;
 use WorkEddy\Platform\Settings\SettingDefinition;
 use WorkEddy\Platform\Settings\SettingType;
 
-final class TaskSettingsProvider implements IModuleSettingsProvider
+final class TaskSettingsProvider implements IModuleSettingsProvider, \WorkEddy\Platform\Settings\ISettingsPageProvider
 {
     public function getModuleName(): string
     {
@@ -47,5 +47,16 @@ final class TaskSettingsProvider implements IModuleSettingsProvider
                 description: 'Whether organization task creation requires a human-assigned task code.',
             ),
         ];
+    }
+
+    public function getSettingsPageMetadata(): \WorkEddy\Platform\Settings\SettingsPageMetadata
+    {
+        return new \WorkEddy\Platform\Settings\SettingsPageMetadata(
+            module: 'task',
+            label: 'Task',
+            viewPermissions: [\WorkEddy\Modules\Task\Authorization\TaskPermissions::UPDATE],
+            editPermissions: [\WorkEddy\Modules\Task\Authorization\TaskPermissions::UPDATE],
+            sortOrder: 230,
+        );
     }
 }

@@ -8,7 +8,7 @@ use WorkEddy\Platform\Settings\IModuleSettingsProvider;
 use WorkEddy\Platform\Settings\SettingDefinition;
 use WorkEddy\Platform\Settings\SettingType;
 
-final class CorrectiveActionSettingsProvider implements IModuleSettingsProvider
+final class CorrectiveActionSettingsProvider implements IModuleSettingsProvider, \WorkEddy\Platform\Settings\ISettingsPageProvider
 {
     public function getModuleName(): string
     {
@@ -22,5 +22,16 @@ final class CorrectiveActionSettingsProvider implements IModuleSettingsProvider
             new SettingDefinition('follow_up_days_after_verification', 'corrective_action', SettingType::INTEGER, 14, 'Follow-up Days', 'Days after verification to schedule follow-up assessment.', validation: fn($v) => (int) $v > 0 ? true : 'Must be positive.'),
             new SettingDefinition('require_evidence_for_completion', 'corrective_action', SettingType::BOOLEAN, true, 'Require Evidence', 'Require evidence before marking action completed.'),
         ];
+    }
+
+    public function getSettingsPageMetadata(): \WorkEddy\Platform\Settings\SettingsPageMetadata
+    {
+        return new \WorkEddy\Platform\Settings\SettingsPageMetadata(
+            module: 'corrective_action',
+            label: 'Corrective Actions',
+            viewPermissions: [\WorkEddy\Modules\CorrectiveAction\Authorization\CorrectiveActionPermissions::MANAGE_LIBRARY],
+            editPermissions: [\WorkEddy\Modules\CorrectiveAction\Authorization\CorrectiveActionPermissions::MANAGE_LIBRARY],
+            sortOrder: 240,
+        );
     }
 }

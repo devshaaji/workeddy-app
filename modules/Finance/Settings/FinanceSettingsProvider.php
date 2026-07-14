@@ -8,7 +8,7 @@ use WorkEddy\Platform\Settings\IModuleSettingsProvider;
 use WorkEddy\Platform\Settings\SettingDefinition;
 use WorkEddy\Platform\Settings\SettingType;
 
-final class FinanceSettingsProvider implements IModuleSettingsProvider
+final class FinanceSettingsProvider implements IModuleSettingsProvider, \WorkEddy\Platform\Settings\ISettingsPageProvider
 {
     public function getModuleName(): string
     {
@@ -35,5 +35,16 @@ final class FinanceSettingsProvider implements IModuleSettingsProvider
                 description: 'Enable payroll summary reporting in finance dashboards.',
             ),
         ];
+    }
+
+    public function getSettingsPageMetadata(): \WorkEddy\Platform\Settings\SettingsPageMetadata
+    {
+        return new \WorkEddy\Platform\Settings\SettingsPageMetadata(
+            module: 'finance',
+            label: 'Finance',
+            viewPermissions: [\WorkEddy\Modules\Finance\Authorization\FinancePermissions::SETTINGS],
+            editPermissions: [\WorkEddy\Modules\Finance\Authorization\FinancePermissions::SETTINGS],
+            sortOrder: 140,
+        );
     }
 }

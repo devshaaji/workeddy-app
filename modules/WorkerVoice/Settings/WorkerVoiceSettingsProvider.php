@@ -8,7 +8,7 @@ use WorkEddy\Platform\Settings\IModuleSettingsProvider;
 use WorkEddy\Platform\Settings\SettingDefinition;
 use WorkEddy\Platform\Settings\SettingType;
 
-final class WorkerVoiceSettingsProvider implements IModuleSettingsProvider
+final class WorkerVoiceSettingsProvider implements IModuleSettingsProvider, \WorkEddy\Platform\Settings\ISettingsPageProvider
 {
     public function getModuleName(): string
     {
@@ -82,5 +82,16 @@ final class WorkerVoiceSettingsProvider implements IModuleSettingsProvider
                 description: 'Whether a worker voice submission must be linked to a task or assessment.',
             ),
         ];
+    }
+
+    public function getSettingsPageMetadata(): \WorkEddy\Platform\Settings\SettingsPageMetadata
+    {
+        return new \WorkEddy\Platform\Settings\SettingsPageMetadata(
+            module: 'worker_voice',
+            label: 'Worker Voice',
+            viewPermissions: [\WorkEddy\Modules\WorkerVoice\Authorization\WorkerVoicePermissions::VIEW_AGGREGATES],
+            editPermissions: [\WorkEddy\Modules\WorkerVoice\Authorization\WorkerVoicePermissions::VIEW_AGGREGATES],
+            sortOrder: 250,
+        );
     }
 }

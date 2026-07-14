@@ -81,6 +81,51 @@ $canAny = static function (array $permissions) use ($currentUserContext): bool {
 $organizationUuid = $currentUserContext?->organizationUuid ?? '';
 $orgBase = $organizationUuid ? "/organizations/$organizationUuid" : '#';
 $e = static fn(string $v): string => htmlspecialchars($v, ENT_QUOTES, 'UTF-8');
+$settingsPageEntries = is_array($settingsPageEntries ?? null) ? $settingsPageEntries : [];
+$requestedSettingsModule = trim((string) ($_GET['module'] ?? ''));
+$platformSettings = [];
+foreach ($settingsPageEntries as $settingsPageEntry) {
+    if (!$settingsPageEntry instanceof \WorkEddy\Platform\Settings\SettingsPageMetadata || !$settingsPageEntry->canView($currentUserContext)) {
+        continue;
+    }
+
+    $pagePath = parse_url($settingsPageEntry->pageUrl(), PHP_URL_PATH);
+    $platformSettings[] = [
+        'label' => $settingsPageEntry->label . ' Settings',
+        'url' => $settingsPageEntry->pageUrl(),
+        'active' => ($settingsPageEntry->customPageUrl !== null && is_string($pagePath) && $pagePath !== '' && $activeNav($pagePath))
+            || ($settingsPageEntry->customPageUrl === null && $activeNav('settings/page') && $requestedSettingsModule === $settingsPageEntry->module),
+        'sortOrder' => $settingsPageEntry->sortOrder,
+    ];
+}
+
+usort($platformSettings, static function (array $left, array $right): int {
+    $orderCompare = ((int) ($left['sortOrder'] ?? 500)) <=> ((int) ($right['sortOrder'] ?? 500));
+    if ($orderCompare !== 0) {
+        return $orderCompare;
+    }
+
+    return strcmp((string) $left['label'], (string) $right['label']);
+});
+if ($requestedSettingsModule === '' && $activeNav('settings/page') && $platformSettings !== []) {
+    $platformSettings[0]['active'] = true;
+}
+
+$platformSettingsOpen = $platformSettings !== [] && array_reduce(
+    $platformSettings,
+    static fn(bool $carry, array $item): bool => $carry || !empty($item['active']),
+    false
+);
+
+$platformVisible = $platformSettings !== [] || $canAny([
+    'organization.manage',
+    'storage.settings.manage',
+    'privacy.retention.manage',
+    ContentPermissions::PAGES_READ,
+    FinancePermissions::VIEW,
+    FinancePermissions::MANAGE,
+    FinancePermissions::SETTINGS,
+]);
 ?>
 <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
 
@@ -447,18 +492,13 @@ $e = static fn(string $v): string => htmlspecialchars($v, ENT_QUOTES, 'UTF-8');
                                 Templates
                             </a>
                         </li>
-                        <li class="menu-item<?= $activeNav('Views/Settings') ? ' active' : '' ?>">
-                            <a class="menu-link" href="/notifications/settings">
-                                Settings
-                            </a>
-                        </li>
                     </ul>
                 </li>
             <?php endif; ?>
         <?php endif; ?>
 
-        <!-- ═══════════ PLATFORM (super_admin only) ═══════════ -->
-        <?php if ($canAny(['organization.manage', 'storage.settings.manage', 'privacy.retention.manage', 'iam.settings.manage', ContentPermissions::PAGES_READ, FinancePermissions::VIEW, FinancePermissions::MANAGE, FinancePermissions::SETTINGS])): ?>
+        <!-- ═══════════ PLATFORM ═══════════ -->
+        <?php if ($platformVisible): ?>
             <li class="menu-header small text-uppercase text-muted fw-semibold">Platform</li>
 
             <?php if ($can('organization.manage')): ?>
@@ -536,6 +576,24 @@ $e = static fn(string $v): string => htmlspecialchars($v, ENT_QUOTES, 'UTF-8');
                 </li>
             <?php endif; ?>
 
+            <?php if ($platformSettings !== []): ?>
+                <li class="menu-item<?= $platformSettingsOpen ? ' active open' : '' ?>">
+                    <a href="javascript:void(0);" class="menu-link menu-toggle">
+                        <i class="menu-icon icon-base bi bi-sliders"></i>
+                        <div data-i18n="Settings">Settings</div>
+                    </a>
+                    <ul class="menu-sub<?= $platformSettingsOpen ? '' : ' d-none' ?>">
+                        <?php foreach ($platformSettings as $item): ?>
+                            <li class="menu-item<?= !empty($item['active']) ? ' active' : '' ?>">
+                                <a class="menu-link" href="<?= $e((string) $item['url']) ?>">
+                                    <?= $e((string) $item['label']) ?>
+                                </a>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                </li>
+            <?php endif; ?>
+
             <?php if ($canAny(['privacy.retention.manage', 'privacy.audit.view'])): ?>
                 <?php $privOpen = $activeAny(['privacy', 'consent', 'retention', 'video-access']); ?>
                 <li class="menu-item<?= $privOpen ? ' active open' : '' ?>">
@@ -566,15 +624,6 @@ $e = static fn(string $v): string => htmlspecialchars($v, ENT_QUOTES, 'UTF-8');
                             </a>
                         </li>
                     </ul>
-                </li>
-            <?php endif; ?>
-
-            <?php if ($can('iam.settings.manage')): ?>
-                <li class="menu-item<?= ($activeNav('settings/page') || $activeNav('admin/settings')) ? ' active' : '' ?>">
-                    <a class="menu-link" href="/settings/page">
-                        <i class="menu-icon icon-base bi bi-sliders"></i>
-                        <div data-i18n="System Settings">System Settings</div>
-                    </a>
                 </li>
             <?php endif; ?>
         <?php endif; ?>

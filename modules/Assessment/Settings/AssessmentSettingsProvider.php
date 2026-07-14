@@ -8,7 +8,7 @@ use WorkEddy\Platform\Settings\IModuleSettingsProvider;
 use WorkEddy\Platform\Settings\SettingDefinition;
 use WorkEddy\Platform\Settings\SettingType;
 
-final class AssessmentSettingsProvider implements IModuleSettingsProvider
+final class AssessmentSettingsProvider implements IModuleSettingsProvider, \WorkEddy\Platform\Settings\ISettingsPageProvider
 {
     public function getModuleName(): string
     {
@@ -45,5 +45,16 @@ final class AssessmentSettingsProvider implements IModuleSettingsProvider
                     ? true : 'Must be between 1 MiB and 5 GiB.',
             ),
         ];
+    }
+
+    public function getSettingsPageMetadata(): \WorkEddy\Platform\Settings\SettingsPageMetadata
+    {
+        return new \WorkEddy\Platform\Settings\SettingsPageMetadata(
+            module: 'assessment',
+            label: 'Assessment',
+            viewPermissions: [\WorkEddy\Modules\Assessment\Authorization\AssessmentPermissions::UPDATE],
+            editPermissions: [\WorkEddy\Modules\Assessment\Authorization\AssessmentPermissions::UPDATE],
+            sortOrder: 220,
+        );
     }
 }

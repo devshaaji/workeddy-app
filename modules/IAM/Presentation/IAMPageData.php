@@ -88,12 +88,66 @@ final class IAMPageData
     /**
      * @return array<string, mixed>
      */
-    public function settings(): array
+    public function settings(UserContext $ctx, ?string $requestedModule = null): array
     {
-        $values = $this->settings->getAllForModule('iam');
-        $definitions = $this->settingsRegistry->getForModule('iam');
+        $modules = [];
+        foreach ($this->settingsRegistry->getPageMetadataEntries() as $metadata) {
+            $module = $metadata->module;
+            $definitions = $this->settingsRegistry->getForModule($module);
+            if ($definitions === [] || !$metadata->canView($ctx)) {
+                continue;
+            }
 
-        return ['settings' => array_map(static fn($value): mixed => $value, $values), 'settingDefinitions' => $definitions];
+            $modules[] = [
+                'key' => $module,
+                'label' => $metadata->label,
+                'url' => $metadata->pageUrl(),
+                'canEdit' => $metadata->canEdit($ctx),
+                'settingCount' => count($definitions),
+                'customPageUrl' => $metadata->customPageUrl,
+                'sortOrder' => $metadata->sortOrder,
+            ];
+        }
+
+        usort($modules, static function (array $left, array $right): int {
+            $orderCompare = ((int) ($left['sortOrder'] ?? 500)) <=> ((int) ($right['sortOrder'] ?? 500));
+            if ($orderCompare !== 0) {
+                return $orderCompare;
+            }
+
+            return strcmp((string) $left['label'], (string) $right['label']);
+        });
+
+        if ($modules === []) {
+            throw new AuthenticationException('You do not have access to any settings modules.');
+        }
+
+        $activeModule = trim((string) ($requestedModule ?? ''));
+        if ($activeModule === '' || !in_array($activeModule, array_column($modules, 'key'), true)) {
+            $activeModule = (string) $modules[0]['key'];
+        }
+
+        $definitions = array_values($this->settingsRegistry->getForModule($activeModule));
+        $values = $this->settings->getAllForModule($activeModule);
+        $activeMeta = null;
+        foreach ($modules as $moduleMeta) {
+            if ($moduleMeta['key'] === $activeModule) {
+                $activeMeta = $moduleMeta;
+                break;
+            }
+        }
+
+        return [
+            'settingsModules' => $modules,
+            'activeSettingsModule' => $activeMeta,
+            'settings' => array_map(static fn($value): mixed => $value, $values),
+            'settingDefinitions' => $definitions,
+        ];
+    }
+
+    public function settingsPageMetadata(string $module): ?\WorkEddy\Platform\Settings\SettingsPageMetadata
+    {
+        return $this->settingsRegistry->getPageMetadata($module);
     }
 
     /**
