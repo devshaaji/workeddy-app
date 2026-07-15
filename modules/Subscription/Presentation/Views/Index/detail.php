@@ -165,9 +165,6 @@ $formatPlanLimit = static function (array $features, string $key, string $suffix
                 $usedStorageMb = $usage['usage']['video_storage_used_mb'] ?? 0;
                 $renderProgress('Video Storage', 'video_storage_used_mb', (int) $usedStorageMb, $maxStorageGb ? (int) ($maxStorageGb * 1024) : null, ' MB');
 
-                $maxAiCredits = $plan['features']['ai_scoring_credits_per_month'] ?? null;
-                $usedAiCredits = $usage['usage']['ai_scoring_credits_used'] ?? 0;
-                $renderProgress('AI Credits', 'ai_scoring_credits_used', (int) $usedAiCredits, $maxAiCredits ? (int) $maxAiCredits : null);
                 ?>
             </div>
         </div>

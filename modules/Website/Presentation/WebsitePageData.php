@@ -70,24 +70,27 @@ final class WebsitePageData
         }
 
         return [
-            $this->fallbackPlan('free', 'Free', 0.00, 'USD', 'monthly', 'Best for early pilots and smaller teams', false, [
-                '10 completed assessments each month',
-                'Manual and video assessments',
-                '1 organization',
-                'Core reporting',
+            $this->fallbackPlan('free', 'Pilot', 0.00, 'USD', 'monthly', 'Best for early pilots and smaller teams', false, [
+                '10 completed assessments per month',
+                'Structured assessment methods (REBA, RULA, NIOSH)',
+                '1 active work site / location',
+                'Worker feedback & discomfort intake',
+                'Basic PDF/CSV report exports',
             ], 'Best for early pilots and smaller teams', 10),
-            $this->fallbackPlan('professional', 'Professional', 99.00, 'USD', 'monthly', 'Best for growing safety and operations teams', true, [
-                '500 completed assessments each month',
-                'Unlimited team members',
-                'Exportable reports',
-                'Dashboard visibility',
+            $this->fallbackPlan('professional', 'Professional', 299.00, 'USD', 'monthly', 'Best for growing safety and operations teams', true, [
+                '500 completed assessments per month',
+                'Unlimited team members & contributors',
+                'Corrective action assignment & workflow tracking',
+                'Before-and-after reassessment comparison',
+                'Full dashboard analytics & filtering',
                 'Prioritized intervention insights',
             ], 'Best for growing safety and operations teams', 20),
-            $this->fallbackPlan('enterprise', 'Enterprise', 0.00, 'USD', 'annual', 'Best for multi-site and large scale programs', false, [
-                'Custom usage limits',
-                'Advanced admin controls',
-                'Expanded analytics',
-                'Onboarding and procurement support',
+            $this->fallbackPlan('enterprise', 'Multi-site', 999.00, 'USD', 'monthly', 'Best for multi-site and large scale programs', false, [
+                'Custom assessment & scan volume options',
+                'Multi-site governance & consolidated views',
+                'Advanced administration, role permissions & audit logs',
+                'Customizable video data retention policies',
+                'Dedicated onboarding, training & procurement support',
             ], 'Best for multi-site and large scale programs', 30),
         ];
     }
@@ -100,7 +103,11 @@ final class WebsitePageData
     {
         $code = strtolower((string) ($plan['code'] ?? ''));
         $name = (string) ($plan['name'] ?? 'Plan');
-        $features = is_array($plan['features'] ?? null) ? $plan['features'] : [];
+        
+        // Override name for enterprise to match new nomenclature
+        if (str_contains($code, 'enterprise')) {
+            $name = 'Multi-site';
+        }
 
         $badge = match (true) {
             str_contains($code, 'free') || str_contains($code, 'starter') => 'Best for early pilots and smaller teams',
@@ -109,14 +116,41 @@ final class WebsitePageData
             default => 'Ergonomics Plan',
         };
 
-        $featureList = $this->humanizeFeatures($features);
-        if ($featureList === []) {
-            $featureList = [
+        $featureList = match (true) {
+            str_contains($code, 'free') || str_contains($code, 'starter') => [
+                '10 completed assessments per month',
+                'Structured assessment methods (REBA, RULA, NIOSH)',
+                '1 active work site / location',
+                'Worker feedback & discomfort intake',
+                'Basic PDF/CSV report exports',
+            ],
+            str_contains($code, 'pro') || str_contains($code, 'professional') => [
+                '500 completed assessments per month',
+                'Unlimited team members & contributors',
+                'Corrective action assignment & workflow tracking',
+                'Before-and-after reassessment comparison',
+                'Full dashboard analytics & filtering',
+                'Prioritized intervention insights',
+            ],
+            str_contains($code, 'enterprise') => [
+                'Custom assessment & scan volume options',
+                'Multi-site governance & consolidated views',
+                'Advanced administration, role permissions & audit logs',
+                'Customizable video data retention policies',
+                'Dedicated onboarding, training & procurement support',
+            ],
+            default => [
                 'Ergonomic Risk Assessments',
                 'REBA, RULA, and NIOSH methods',
                 'Business-grade reporting',
-            ];
-        }
+            ],
+        };
+
+        $ctaLabel = match (true) {
+            str_contains($code, 'enterprise') => 'Contact Sales',
+            str_contains($code, 'pro') || str_contains($code, 'professional') => 'Start Professional Trial',
+            default => 'Start Pilot',
+        };
 
         return [
             'code' => $code !== '' ? $code : strtolower(str_replace(' ', '-', $name)),
@@ -131,7 +165,7 @@ final class WebsitePageData
             'summary' => $badge,
             'features' => $featureList,
             'is_featured' => str_contains($code, 'pro') || str_contains($code, 'professional'),
-            'cta_label' => str_contains($code, 'enterprise') ? 'Contact Sales' : (str_contains($code, 'pro') || str_contains($code, 'professional') ? 'Start Professional Trial' : 'Start Free'),
+            'cta_label' => $ctaLabel,
         ];
     }
 
@@ -178,6 +212,12 @@ final class WebsitePageData
         string $summary = '',
         ?int $displayOrder = null,
     ): array {
+        $ctaLabel = match (true) {
+            str_contains($code, 'enterprise') => 'Contact Sales',
+            str_contains($code, 'professional') => 'Start Professional Trial',
+            default => 'Start Pilot',
+        };
+
         return [
             'code' => $code,
             'name' => $name,
@@ -191,7 +231,7 @@ final class WebsitePageData
             'summary' => $summary !== '' ? $summary : $badge,
             'features' => $features,
             'is_featured' => $isFeatured,
-            'cta_label' => $code === 'enterprise' ? 'Contact Sales' : ($code === 'professional' ? 'Start Professional Trial' : 'Start Free'),
+            'cta_label' => $ctaLabel,
         ];
     }
 

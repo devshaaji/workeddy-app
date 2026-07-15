@@ -9,9 +9,9 @@ return new class implements SeederInterface
 {
     private const PLANS = [
         [
-            'code'          => 'starter',
-            'name'          => 'Starter',
-            'description'   => 'For small teams getting started with ergonomics.',
+            'code'          => 'free',
+            'name'          => 'Pilot',
+            'description'   => 'For organizations evaluating WorkEddy with a limited number of authorized tasks and users.',
             'price'         => '0.00',
             'display_order' => 1,
             'features'      => [
@@ -21,8 +21,7 @@ return new class implements SeederInterface
                 'live_session_minutes_limit'    => 60,
                 'max_assessments_per_month'     => 10,
                 'video_storage_gb'              => 1,
-                'ai_scoring_credits_per_month'  => 10,
-                'max_video_retention_days'      => 7,
+                'max_video_retention_days'      => 30,
                 'max_users'                     => 3,
                 'max_live_concurrent_sessions'  => 1,
             ],
@@ -30,7 +29,7 @@ return new class implements SeederInterface
         [
             'code'          => 'professional',
             'name'          => 'Professional',
-            'description'   => 'For growing safety teams with higher scan volumes.',
+            'description'   => 'For organizations managing ongoing ergonomic assessment and corrective-action workflows.',
             'price'         => '299.00',
             'display_order' => 2,
             'features'      => [
@@ -40,7 +39,6 @@ return new class implements SeederInterface
                 'live_session_minutes_limit'    => 3000,
                 'max_assessments_per_month'     => 500,
                 'video_storage_gb'              => 100,
-                'ai_scoring_credits_per_month'  => 500,
                 'max_video_retention_days'      => 180,
                 'max_users'                     => 50,
                 'max_live_concurrent_sessions'  => 4,
@@ -48,9 +46,9 @@ return new class implements SeederInterface
         ],
         [
             'code'          => 'enterprise',
-            'name'          => 'Enterprise',
-            'description'   => 'Unlimited scans and members for large organisations.',
-            'price'         => '999.00',
+            'name'          => 'Multi-site',
+            'description'   => 'For organizations requiring additional worksites, governance controls, reporting, and implementation support.',
+            'price' => '999.00',
             'display_order' => 3,
             'features'      => [
                 'max_worksites'                => null,
@@ -59,8 +57,7 @@ return new class implements SeederInterface
                 'live_session_minutes_limit'    => null,
                 'max_assessments_per_month'     => null,
                 'video_storage_gb'              => null,
-                'ai_scoring_credits_per_month'  => null,
-                'max_video_retention_days'      => 3650,
+                'max_video_retention_days'      => 365,
                 'max_users'                     => null,
                 'max_live_concurrent_sessions'  => 12,
             ],
@@ -70,6 +67,9 @@ return new class implements SeederInterface
     public function run(Connection $db): void
     {
         $now = (new DateTimeImmutable())->format('Y-m-d H:i:s');
+
+        // Deactivate legacy starter plan if it exists
+        $db->update('subscription_plans', ['is_active' => 0], ['code' => 'starter']);
 
         foreach (self::PLANS as $plan) {
             $existing = $db->fetchAssociative(

@@ -114,12 +114,22 @@ final class PublicRegisterUseCase
         if ($plan === null) {
             $plan = $this->subscriptionPlans->upsert([
                 'code' => 'free',
-                'name' => 'Free Trial',
-                'description' => 'Default free trial plan',
+                'name' => 'Pilot',
+                'description' => 'For organizations evaluating WorkEddy with a limited number of authorized tasks and users.',
                 'billing_cycle' => 'monthly',
                 'price' => 0.0,
                 'currency' => 'USD',
-                'features' => [],
+                'features' => [
+                    'max_worksites'                => 1,
+                    'video_scan_limit'              => 5,
+                    'live_session_limit'            => 5,
+                    'live_session_minutes_limit'    => 60,
+                    'max_assessments_per_month'     => 10,
+                    'video_storage_gb'              => 1,
+                    'max_video_retention_days'      => 30,
+                    'max_users'                     => 3,
+                    'max_live_concurrent_sessions'  => 1,
+                ],
                 'is_active' => true,
             ]);
         }
