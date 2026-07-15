@@ -176,10 +176,10 @@
           : (stateLabelWrap ? stateLabelWrap.getAttribute('data-before-label') : 'Before intervention');
       }
       if (scoreLabel) {
-        scoreLabel.textContent = isAfter ? 'Risk 3.4' : 'Risk 8.2';
+        scoreLabel.textContent = isAfter ? 'REBA score: 3.4' : 'REBA score: 8';
       }
       if (stateNote) {
-        stateNote.textContent = isAfter ? 'Posture normalized' : 'Deep bend detected';
+        stateNote.textContent = isAfter ? 'Reviewer confirmation required' : 'High risk — investigation and change needed soon';
       }
     }
 

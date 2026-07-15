@@ -21,6 +21,7 @@ php cronjobs/transport-outbox-dispatch.php
 php cronjobs/runtime-doctor.php
 php cronjobs/video-retention-enforce.php
 php cronjobs/corrective-action-maintenance.php
+php cronjobs/national-metrics-refresh.php
 php cronjobs/subscription-renewal-sweep.php
 php cronjobs/subscription-dunning-sweep.php
 ```
@@ -79,6 +80,7 @@ Cron examples:
 40 3 * * * cd /path/to/WorkEddy/app && php cronjobs/queue-maintenance.php
 42 3 * * * cd /path/to/WorkEddy/app && php cronjobs/video-retention-enforce.php
 43 3 * * * cd /path/to/WorkEddy/app && php cronjobs/corrective-action-maintenance.php
+15 1 * * * cd /path/to/WorkEddy/app && php cronjobs/national-metrics-refresh.php
 15 2 * * * cd /path/to/WorkEddy/app && php cronjobs/subscription-renewal-sweep.php
 30 2 * * * cd /path/to/WorkEddy/app && php cronjobs/subscription-dunning-sweep.php
 45 3 * * * cd /path/to/WorkEddy/app && WorkEddy_RUNTIME_DOCTOR_STRICT=1 php cronjobs/runtime-doctor.php

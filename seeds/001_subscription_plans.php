@@ -24,6 +24,19 @@ return new class implements SeederInterface
                 'max_video_retention_days'      => 30,
                 'max_users'                     => 3,
                 'max_live_concurrent_sessions'  => 1,
+                'marketing'                     => [
+                    'summary' => 'For organizations evaluating WorkEddy with a limited number of authorized tasks and users.',
+                    'highlights' => [
+                        'Guided pilot onboarding',
+                        'Structured ergonomic assessments',
+                        'Worker feedback intake',
+                        'Basic reporting exports',
+                    ],
+                    'cta_label' => 'Request Pilot',
+                    'cta_href' => '/register',
+                    'featured' => false,
+                    'custom_pricing' => false,
+                ],
             ],
         ],
         [
@@ -42,6 +55,19 @@ return new class implements SeederInterface
                 'max_video_retention_days'      => 180,
                 'max_users'                     => 50,
                 'max_live_concurrent_sessions'  => 4,
+                'marketing'                     => [
+                    'summary' => 'For organizations managing ongoing ergonomic assessment and corrective-action workflows.',
+                    'highlights' => [
+                        'Ongoing assessment workflows',
+                        'Corrective action tracking',
+                        'Before-and-after reassessment',
+                        'Dashboard reporting and filtering',
+                    ],
+                    'cta_label' => 'Start Professional Trial',
+                    'cta_href' => '/register',
+                    'featured' => true,
+                    'custom_pricing' => false,
+                ],
             ],
         ],
         [
@@ -60,6 +86,19 @@ return new class implements SeederInterface
                 'max_video_retention_days'      => 365,
                 'max_users'                     => null,
                 'max_live_concurrent_sessions'  => 12,
+                'marketing'                     => [
+                    'summary' => 'For organizations requiring additional worksites, governance controls, reporting, and implementation support.',
+                    'highlights' => [
+                        'Additional worksites',
+                        'Governance and role controls',
+                        'Consolidated reporting',
+                        'Implementation support',
+                    ],
+                    'cta_label' => 'Contact Sales',
+                    'cta_href' => '/contact-us',
+                    'featured' => false,
+                    'custom_pricing' => true,
+                ],
             ],
         ],
     ];

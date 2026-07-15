@@ -310,22 +310,20 @@
 
     <div class="row g-4">
       <?php foreach (($featured_plans ?? []) as $plan): ?>
-        <?php $isEnterprise = strtolower((string) $plan['code']) === 'enterprise'; ?>
         <div class="col-md-6 col-lg-4">
           <div class="card marketing-pricing-card <?= !empty($plan['is_featured']) ? 'is-featured' : '' ?> p-4 h-100 d-flex flex-column border-0 shadow-sm rounded-3">
             <?php if (!empty($plan['is_featured'])): ?>
               <span class="badge bg-primary text-white rounded-pill align-self-start mb-3 px-3 py-1">Recommended</span>
             <?php endif; ?>
             <h3 class="h4 fw-bold text-dark mb-2"><?= htmlspecialchars((string) $plan['name'], ENT_QUOTES, 'UTF-8') ?></h3>
-            <p class="text-muted mb-4 small"><?= htmlspecialchars((string) ($plan['badge'] ?? ''), ENT_QUOTES, 'UTF-8') ?></p>
+            <p class="text-muted mb-4 small"><?= htmlspecialchars((string) ($plan['summary'] ?? $plan['description'] ?? ''), ENT_QUOTES, 'UTF-8') ?></p>
             <div class="display-6 fw-bold text-dark mb-4">
-              <?php if ($isEnterprise): ?>
+              <?php if (!empty($plan['is_custom_pricing'])): ?>
                 Custom pricing
               <?php else: ?>
                 $<?= number_format((float) $plan['price'], 0) ?><span class="fs-6 text-muted fw-semibold">/<?= $plan['billing_cycle'] === 'annual' ? 'yr' : 'mo' ?></span>
               <?php endif; ?>
             </div>
-            <p class="text-muted mb-4 small"><?= htmlspecialchars((string) ($plan['description'] ?? ''), ENT_QUOTES, 'UTF-8') ?></p>
             <ul class="list-unstyled mb-4">
               <?php foreach (($plan['features'] ?? []) as $feature): ?>
                 <li class="d-flex gap-2 mb-3 text-muted small">
@@ -334,7 +332,7 @@
                 </li>
               <?php endforeach; ?>
             </ul>
-            <a href="<?= $isEnterprise ? '/contact' : '/register' ?>" class="btn <?= !empty($plan['is_featured']) ? 'btn-primary' : 'btn-outline-primary' ?> w-100 mt-auto">
+            <a href="<?= htmlspecialchars((string) ($plan['cta_href'] ?? '/register'), ENT_QUOTES, 'UTF-8') ?>" class="btn <?= !empty($plan['is_featured']) ? 'btn-primary' : 'btn-outline-primary' ?> w-100 mt-auto">
               <?= htmlspecialchars((string) ($plan['cta_label'] ?? 'Get Started'), ENT_QUOTES, 'UTF-8') ?>
             </a>
           </div>

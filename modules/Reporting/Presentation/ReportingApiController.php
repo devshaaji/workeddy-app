@@ -74,6 +74,13 @@ final class ReportingApiController
         return $this->redirectToSignedAccess($fileUuid, $request);
     }
 
+    public function downloadNationalImportancePdf(Request $request): Response
+    {
+        $fileUuid = $this->generatePdf->generateNationalImportancePdf();
+
+        return $this->redirectToSignedAccess($fileUuid, $request);
+    }
+
     public function downloadDashboardPdf(Request $request): Response
     {
         $fileUuid = $this->generatePdf->generateDashboardPdf();

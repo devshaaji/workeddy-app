@@ -6,8 +6,12 @@ namespace WorkEddy\Modules\Reporting\Application\UseCases;
 
 use WorkEddy\Modules\Content\Domain\Contracts\ContentPageReader;
 use WorkEddy\Modules\Content\Support\MethodologyPageDefinition;
+use WorkEddy\Modules\Content\Support\NationalImportancePageDefinition;
+use WorkEddy\Modules\Reporting\Application\Services\PlatformAggregateMetricsService;
 use WorkEddy\Modules\Reporting\Application\Services\ReportArtifactService;
 use WorkEddy\Modules\Reporting\Application\Services\ReportingSnapshotService;
+use WorkEddy\Modules\Reporting\Domain\Contracts\INationalStatisticRepository;
+use WorkEddy\Modules\Reporting\Domain\NationalStatisticCategory;
 use WorkEddy\Modules\Reporting\Settings\ReportingSettings;
 use WorkEddy\Modules\Storage\Domain\Contracts\IStorageService;
 use WorkEddy\Modules\Storage\Application\DTOs\StoreUploadedFileRequest;
@@ -27,6 +31,8 @@ final class GeneratePdf
         private readonly ISessionService $session,
         private readonly SettingsService $globalSettings,
         private readonly ?ContentPageReader $contentPages = null,
+        private readonly ?PlatformAggregateMetricsService $platformMetrics = null,
+        private readonly ?INationalStatisticRepository $nationalStatistics = null,
     ) {}
 
     public function generateDashboardPdf(): string
@@ -92,6 +98,50 @@ final class GeneratePdf
         );
     }
 
+    public function generateNationalImportancePdf(?string $previousArtifactUuid = null, ?string $regenerationReason = null): string
+    {
+        $dynamic = $this->platformMetrics?->latestSnapshot() ?? [
+            'industriesRepresented' => 0,
+            'worksitesAssessed' => 0,
+            'highRiskTasksIdentified' => 0,
+            'commonHighStrainTasks' => [],
+            'bodyRegionBurden' => [],
+            'commonCorrectiveActions' => [],
+            'averageRiskReductionAfterCorrection' => 0.0,
+            'workerDiscomfortTrend' => [],
+            'generatedAt' => null,
+        ];
+
+        $allStatistics = $this->nationalStatistics?->listAll(publishedOnly: true) ?? [];
+        $byCategory = [];
+        foreach (NationalStatisticCategory::keys() as $key) {
+            $byCategory[$key] = [];
+        }
+        foreach ($allStatistics as $statistic) {
+            $byCategory[$statistic->category][] = $statistic->toView();
+        }
+
+        $data = [
+            'dynamic' => $dynamic,
+            'categoryLabels' => NationalStatisticCategory::labels(),
+            'statisticsByCategory' => $byCategory,
+            'context' => $this->nationalImportanceContext(),
+        ];
+        $data = $this->enrichData($data);
+        $html = $this->renderTemplate('national_importance', $data);
+
+        return $this->createAndStorePdf(
+            'national_importance',
+            null,
+            'national_importance_report_' . date('Ymd_His') . '.pdf',
+            'national_importance',
+            $data,
+            $html,
+            $previousArtifactUuid,
+            $regenerationReason,
+        );
+    }
+
     public function generateAssessmentPdf(string $uuid, ?string $previousArtifactUuid = null, ?string $regenerationReason = null): string
     {
         $data = $this->snapshots->assessmentReport($uuid);
@@ -142,6 +192,7 @@ final class GeneratePdf
             'operations' => $this->generateOperationsPdf(),
             'pilot_summary' => $this->generatePilotSummaryPdf($organizationUuid, [], $previousArtifactUuid, $regenerationReason),
             'impact_tracker' => $this->generateImpactTrackerPdf($organizationUuid, [], $previousArtifactUuid, $regenerationReason),
+            'national_importance' => $this->generateNationalImportancePdf($previousArtifactUuid, $regenerationReason),
             'assessment' => $this->generateAssessmentPdf($this->requireSourceUuid($reportType, $sourceUuid), $previousArtifactUuid, $regenerationReason),
             'corrective_action' => $this->generateCorrectiveActionPdf($this->requireSourceUuid($reportType, $sourceUuid), $previousArtifactUuid, $regenerationReason),
             'comparison' => $this->generateComparisonPdf($this->requireSourceUuid($reportType, $sourceUuid), $previousArtifactUuid, $regenerationReason),
@@ -210,6 +261,30 @@ final class GeneratePdf
                 'contentRevisionUuid' => $page->revisionUuid,
                 'contentSnapshotHash' => $page->snapshotHash,
             ],
+        ];
+    }
+
+    /** @return array{problemSummary: string, futureResearch: string} */
+    private function nationalImportanceContext(): array
+    {
+        $fallback = [
+            'problemSummary' => 'Musculoskeletal strain remains one of the most common and costly sources of workplace injury across warehouse work, health care support work, manual material handling, long-term care, food service, manufacturing, delivery work, and other repetitive or high-strain jobs.',
+            'futureResearch' => 'Planned areas of continued study include longitudinal injury-outcome tracking, sector-specific benchmarking, and independent validation of platform risk-reduction estimates.',
+        ];
+
+        $page = $this->contentPages?->findPublishedByKey(NationalImportancePageDefinition::PAGE_KEY);
+        if ($page === null) {
+            return $fallback;
+        }
+
+        $sections = [];
+        foreach ($page->sections as $section) {
+            $sections[$section->sectionKey] = trim($section->plainText);
+        }
+
+        return [
+            'problemSummary' => $sections[NationalImportancePageDefinition::SECTION_PROBLEM_SUMMARY] ?? $fallback['problemSummary'],
+            'futureResearch' => $sections[NationalImportancePageDefinition::SECTION_FUTURE_RESEARCH] ?? $fallback['futureResearch'],
         ];
     }
 

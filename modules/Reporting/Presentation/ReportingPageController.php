@@ -6,6 +6,7 @@ namespace WorkEddy\Modules\Reporting\Presentation;
 
 use WorkEddy\Modules\IAM\Domain\Contracts\IPermissionService;
 use WorkEddy\Modules\Reporting\Authorization\ReportingPermissions;
+use WorkEddy\Modules\Reporting\Domain\NationalStatisticCategory;
 use WorkEddy\Platform\Http\Request;
 use WorkEddy\Platform\Http\Response;
 use WorkEddy\Platform\Session\ISessionService;
@@ -72,6 +73,37 @@ final class ReportingPageController
                 $this->pageData->impactTracker($ctx, $this->pilotFilters($request)),
                 ['pageScripts' => ['js/modules/impact-tracker.js']],
             ),
+        );
+    }
+
+    public function nationalImportance(Request $request): Response
+    {
+        $ctx = $this->requireContext();
+        $this->permissions->requirePrivilege($ctx, ReportingPermissions::SYSTEM_VIEW);
+
+        return $this->views->render(
+            'modules/Reporting/Presentation/Views/National-importance/index.php',
+            'Reporting',
+            array_replace(
+                $this->pageData->nationalImportance($ctx),
+                ['pageScripts' => ['js/modules/national-importance.js']],
+            ),
+        );
+    }
+
+    public function nationalImportanceAdmin(Request $request): Response
+    {
+        $ctx = $this->requireContext();
+        $this->permissions->requirePrivilege($ctx, ReportingPermissions::NATIONAL_CONTEXT_MANAGE);
+
+        return $this->views->render(
+            'modules/Reporting/Presentation/Views/National-importance/Admin/manage.php',
+            'Reporting',
+            [
+                'user' => (string) $ctx->userId,
+                'categoryLabels' => NationalStatisticCategory::labels(),
+                'pageScripts' => ['js/modules/national-importance-admin.js'],
+            ],
         );
     }
 

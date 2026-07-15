@@ -49,14 +49,14 @@ $asset = static fn(string $path): string => htmlspecialchars($assetBase . '/' . 
             <div class="row g-4">
                 <div class="col-lg-4">
                     <img src="/assets/img/workeddy.png" alt="WorkEddy" class="site-logo mb-3">
-                    <p class="text-muted pe-lg-5">Automating ergonomic risk assessments to support MSD prevention, improve assessment consistency, and document prevention actions.</p>
+                    <p class="text-muted pe-lg-5">Supporting task-level ergonomic assessment, corrective-action follow-through, and responsible workplace prevention.</p>
                 </div>
                 <div class="col-6 col-lg-2 offset-lg-2">
                     <h6>Product</h6>
                     <ul class="list-unstyled">
                         <li class="mb-2"><a href="/#features">Features</a></li>
-                        <li class="mb-2"><a href="/#pricing">Pricing</a></li>
-                        <li class="mb-2"><a href="/plans">Plans</a></li>
+                        <li class="mb-2"><a href="/plans">Implementation Pathways</a></li>
+                        <li class="mb-2"><a href="/contact-us">Request Detailed Comparison</a></li>
                     </ul>
                 </div>
                 <div class="col-6 col-lg-2">
@@ -72,12 +72,13 @@ $asset = static fn(string $path): string => htmlspecialchars($assetBase . '/' . 
                     <h6>Legal</h6>
                     <ul class="list-unstyled">
                         <li class="mb-2"><a href="/privacy-policy">Privacy Policy</a></li>
+                        <li class="mb-2"><a href="/worker-privacy">Worker Privacy</a></li>
                         <li class="mb-2"><a href="/terms-of-service">Terms of Service</a></li>
                     </ul>
                 </div>
             </div>
             <div class="border-top mt-5 pt-4 text-center text-muted small">
-                &copy; <?= date('Y') ?> WorkEddy, Inc. All rights reserved.
+                &copy; <?= date('Y') ?> WorkEddy. All rights reserved.
             </div>
         </div>
     </footer>

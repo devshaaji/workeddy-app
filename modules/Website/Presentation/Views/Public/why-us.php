@@ -28,8 +28,8 @@
       <div class="row g-4 align-items-stretch">
         <div class="col-lg-6">
           <div class="comparison-panel comparison-muted h-100">
-            <span>Checklist-only tools</span>
-            <h2>Risk is documented, then often disconnected from follow-through.</h2>
+            <span>Fragmented assessment workflows</span>
+            <h2>When assessment findings, corrective actions, and follow-up evidence are stored in separate systems, it may be difficult to determine who was responsible, what action was completed, and whether the task was reassessed.</h2>
             <ul>
               <li>Hazards can become static notes.</li>
               <li>Corrective action ownership is hard to trace.</li>
@@ -45,7 +45,7 @@
             <ul>
               <li>Task review stays connected to body-region insights.</li>
               <li>Recommended controls become assigned actions.</li>
-              <li>Evidence and reassessment document whether work improved.</li>
+              <li>Follow-up evidence and reassessment document whether measured task-level risk changed.</li>
               <li>Consent, de-identification, access control, and human review protect trust.</li>
             </ul>
           </div>
@@ -70,12 +70,14 @@
           <span class="section-kicker">What Makes WorkEddy Different</span>
           <h2 class="section-title">The platform is designed around action, verification, and learning.</h2>
           <div class="proof-list">
-            <?php foreach ([
-              ['icon' => 'bi-arrow-repeat', 'title' => 'Prevention loop, not checklist', 'copy' => 'Assign corrective actions, verify completion, reassess the task, and document whether risk changed.'],
-              ['icon' => 'bi-bullseye', 'title' => 'Task-level visibility', 'copy' => 'Focus on where strain, awkward posture, repetition, force, fatigue, heat, and discomfort first appear.'],
-              ['icon' => 'bi-person-check', 'title' => 'Worker voice without worker blame', 'copy' => 'Structure discomfort and task feedback around work design, tools, workload, staffing, pace, exposure, and controls.'],
-              ['icon' => 'bi-shield-check', 'title' => 'Privacy-first prevention', 'copy' => 'Support consent, face blurring, de-identified reporting, secure access, audit logs, and human review.'],
-            ] as $item): ?>
+            <?php foreach (
+              [
+                ['icon' => 'bi-arrow-repeat', 'title' => 'Prevention loop, not checklist', 'copy' => 'Assign corrective actions, verify completion, reassess the task, and document whether risk changed.'],
+                ['icon' => 'bi-bullseye', 'title' => 'Task-level visibility', 'copy' => 'Focus on where strain, awkward posture, repetition, force, fatigue, heat, and discomfort first appear.'],
+                ['icon' => 'bi-person-check', 'title' => 'Worker voice without worker blame', 'copy' => 'Structure discomfort and task feedback around work design, tools, workload, staffing, pace, exposure, and controls.'],
+                ['icon' => 'bi-shield-check', 'title' => 'Privacy-protective prevention', 'copy' => 'Depending on the configured and available features, WorkEddy supports worker notice or authorization, reduced-identification workflows, controlled access, retention management, and human review.'],
+              ] as $item
+            ): ?>
               <div class="proof-item">
                 <i class="bi <?= htmlspecialchars($item['icon'], ENT_QUOTES, 'UTF-8') ?>"></i>
                 <div>
@@ -93,12 +95,14 @@
   <section class="site-section bg-white">
     <div class="container">
       <div class="row g-4">
-        <?php foreach ([
-          ['title' => 'Human-reviewed technology', 'copy' => 'AI-assisted features support posture review and risk detection while reviewer confirmation keeps decisions explainable and responsible.'],
-          ['title' => 'Corrective action that can be tracked', 'copy' => 'Risk factors connect to recommended controls, responsible owners, status, evidence, and follow-up review.'],
-          ['title' => 'Public health value', 'copy' => 'De-identified prevention evidence can support pilots, research, employer learning, grant applications, dashboards, and occupational health improvement.'],
-          ['title' => 'Sustainable work design', 'copy' => 'Protecting workers, redesigning harmful tasks, and reducing preventable harm belong to a more sustainable future of work.'],
-        ] as $item): ?>
+        <?php foreach (
+          [
+            ['title' => 'Human-reviewed technology', 'copy' => 'Technology-assisted features may identify visible posture and movement patterns for reviewer consideration. A qualified user confirms the task context, method inputs, score interpretation, and recommended response before findings are used.'],
+            ['title' => 'Corrective action that can be tracked', 'copy' => 'Risk factors connect to recommended controls, responsible owners, status, evidence, and follow-up review.'],
+            ['title' => 'Public health value', 'copy' => 'De-identified prevention evidence can support pilots, research, employer learning, grant applications, dashboards, and occupational health improvement.'],
+            ['title' => 'Sustainable work design', 'copy' => 'Protecting workers, redesigning harmful tasks, and reducing preventable harm belong to a more sustainable future of work.'],
+          ] as $item
+        ): ?>
           <div class="col-md-6 col-xl-3">
             <div class="about-feature h-100">
               <h3><?= htmlspecialchars($item['title'], ENT_QUOTES, 'UTF-8') ?></h3>

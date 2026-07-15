@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace WorkEddy\Tests\Website;
 
 use PHPUnit\Framework\TestCase;
+use WorkEddy\Modules\Subscription\Domain\Entities\SubscriptionPlan;
 
 final class PublicWebsiteDesignTest extends TestCase
 {
@@ -152,6 +153,67 @@ final class PublicWebsiteDesignTest extends TestCase
         foreach (['/about-us', '/founder-message', '/why-us', '/contact-us'] as $href) {
             self::assertStringContainsString('href="' . $href . '"', $layout);
         }
+    }
+
+    public function testPlansPageAvoidsHardcodedQuotaComparisonTable(): void
+    {
+        $root = dirname(__DIR__, 2);
+
+        $plans = file_get_contents($root . '/modules/Website/Presentation/Views/Public/plans.php');
+        self::assertIsString($plans);
+        self::assertStringNotContainsString('Compare Plans in Detail', $plans);
+        self::assertStringNotContainsString('500 / month', $plans);
+        self::assertStringNotContainsString('30 days', $plans);
+        self::assertStringContainsString('Request detailed comparison', $plans);
+    }
+
+    public function testWebsitePageDataUsesPlanMarketingMetadataFromSubscriptionPlan(): void
+    {
+        $settingsService = new \WorkEddy\Platform\Settings\SettingsService([
+            'website.site_name' => 'WorkEddy',
+            'website.contact_email' => 'hello@workeddy.com',
+            'website.support_phone' => '123-456-7890',
+            'website.maintenance_mode' => false,
+        ]);
+        $websiteSettings = new \WorkEddy\Modules\Website\Settings\WebsiteSettings($settingsService);
+
+        $planRepository = $this->createMock(\WorkEddy\Modules\Subscription\Domain\Contracts\ISubscriptionPlanRepository::class);
+        $planRepository->method('listActive')->willReturn([
+            new SubscriptionPlan(
+                id: 1,
+                code: 'professional',
+                name: 'Professional',
+                description: 'For organizations managing ongoing ergonomic assessment and corrective-action workflows.',
+                billingCycle: 'monthly',
+                price: 299.0,
+                currency: 'USD',
+                features: [
+                    'max_worksites' => 5,
+                    'marketing' => [
+                        'summary' => 'Backend-defined public summary.',
+                        'highlights' => ['Backend-defined highlight'],
+                        'cta_label' => 'Backend CTA',
+                        'cta_href' => '/contact-us',
+                        'featured' => true,
+                        'custom_pricing' => false,
+                    ],
+                ],
+                isActive: true,
+                displayOrder: 2,
+                createdAt: new \DateTimeImmutable('2026-07-15 00:00:00'),
+                updatedAt: new \DateTimeImmutable('2026-07-15 00:00:00'),
+            ),
+        ]);
+
+        $pageData = new \WorkEddy\Modules\Website\Presentation\WebsitePageData($websiteSettings, $planRepository);
+        $payload = $pageData->plans();
+
+        self::assertCount(1, $payload['plans']);
+        self::assertSame('Backend-defined public summary.', $payload['plans'][0]['summary']);
+        self::assertSame(['Backend-defined highlight'], $payload['plans'][0]['features']);
+        self::assertSame('Backend CTA', $payload['plans'][0]['cta_label']);
+        self::assertSame('/contact-us', $payload['plans'][0]['cta_href']);
+        self::assertTrue($payload['plans'][0]['is_featured']);
     }
 
     public function testSubmitContactFormValidatesInputs(): void

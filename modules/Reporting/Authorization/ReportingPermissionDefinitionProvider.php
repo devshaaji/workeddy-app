@@ -15,6 +15,7 @@ final class ReportingPermissionDefinitionProvider implements IPermissionDefiniti
             new PermissionDefinition(ReportingPermissions::VIEW, 'View Reports', 'Can view management reporting dashboards.', 'reporting', 'read'),
             new PermissionDefinition(ReportingPermissions::SYSTEM_VIEW, 'View System Reports', 'Can view system-wide reporting dashboards and operational summaries.', 'reporting', 'read', systemOnly: true),
             new PermissionDefinition(ReportingPermissions::SETTINGS, 'Manage Reporting Settings', 'Can manage reporting settings.', 'reporting', 'admin'),
+            new PermissionDefinition(ReportingPermissions::NATIONAL_CONTEXT_MANAGE, 'Manage National Context Statistics', 'Can add, edit, and unpublish the sourced national statistics shown on the National Importance dashboard.', 'reporting', 'admin', systemOnly: true),
         ];
     }
 }

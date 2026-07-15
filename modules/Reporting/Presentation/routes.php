@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use WorkEddy\Modules\Reporting\Authorization\ReportingPermissions;
+use WorkEddy\Modules\Reporting\Presentation\NationalStatisticAdminController;
 use WorkEddy\Modules\Reporting\Presentation\ReportingApiController;
 use WorkEddy\Modules\Reporting\Presentation\ReportingPageController;
 use WorkEddy\Platform\Http\RouteRegistrar;
@@ -16,6 +17,8 @@ return function (RouteRegistrar $routes): void {
             $web->add('GET', '/operations', [ReportingPageController::class, 'operations'], ['permission:' . ReportingPermissions::SYSTEM_VIEW]);
             $web->add('GET', '/pilot-summary', [ReportingPageController::class, 'pilotSummary'], ['permission:' . ReportingPermissions::VIEW]);
             $web->add('GET', '/impact-tracker', [ReportingPageController::class, 'impactTracker'], ['permission:' . ReportingPermissions::VIEW]);
+            $web->add('GET', '/national-importance', [ReportingPageController::class, 'nationalImportance'], ['permission:' . ReportingPermissions::SYSTEM_VIEW]);
+            $web->add('GET', '/national-importance/manage', [ReportingPageController::class, 'nationalImportanceAdmin'], ['permission:' . ReportingPermissions::NATIONAL_CONTEXT_MANAGE]);
             $web->add('GET', '/settings', [ReportingPageController::class, 'settings'], ['permission:' . ReportingPermissions::SYSTEM_VIEW]);
             $web->add('GET', '/assessment/{uuid:' . $uuid . '}', [ReportingPageController::class, 'assessment'], ['permission:' . ReportingPermissions::VIEW]);
             $web->add('GET', '/corrective-action/{uuid:' . $uuid . '}', [ReportingPageController::class, 'correctiveAction'], ['permission:' . ReportingPermissions::VIEW]);
@@ -41,6 +44,14 @@ return function (RouteRegistrar $routes): void {
             $api->add('GET', '/pilot-summary/csv', [ReportingApiController::class, 'downloadPilotSummaryCsv'], ['permission:' . ReportingPermissions::VIEW]);
             $api->add('GET', '/impact-tracker', [ReportingApiController::class, 'impactTracker'], ['permission:' . ReportingPermissions::VIEW]);
             $api->add('GET', '/impact-tracker/pdf', [ReportingApiController::class, 'downloadImpactTrackerPdf'], ['permission:' . ReportingPermissions::VIEW]);
+            $api->add('GET', '/national-importance/pdf', [ReportingApiController::class, 'downloadNationalImportancePdf'], ['permission:' . ReportingPermissions::SYSTEM_VIEW]);
+
+            // National Statistics admin CRUD (National Importance dashboard's static, source-cited layer)
+            $api->add('GET', '/national-statistics', [NationalStatisticAdminController::class, 'list'], ['permission:' . ReportingPermissions::NATIONAL_CONTEXT_MANAGE]);
+            $api->add('GET', '/national-statistics/{uuid:' . $uuid . '}', [NationalStatisticAdminController::class, 'show'], ['permission:' . ReportingPermissions::NATIONAL_CONTEXT_MANAGE]);
+            $api->add('POST', '/national-statistics', [NationalStatisticAdminController::class, 'create'], ['permission:' . ReportingPermissions::NATIONAL_CONTEXT_MANAGE]);
+            $api->add('PUT', '/national-statistics/{uuid:' . $uuid . '}', [NationalStatisticAdminController::class, 'update'], ['permission:' . ReportingPermissions::NATIONAL_CONTEXT_MANAGE]);
+            $api->add('DELETE', '/national-statistics/{uuid:' . $uuid . '}', [NationalStatisticAdminController::class, 'delete'], ['permission:' . ReportingPermissions::NATIONAL_CONTEXT_MANAGE]);
 
             // Assessment Reports
             $api->add('GET', '/assessment/{uuid:' . $uuid . '}', [ReportingApiController::class, 'assessment'], ['permission:' . ReportingPermissions::VIEW]);

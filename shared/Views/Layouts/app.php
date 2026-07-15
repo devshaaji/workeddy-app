@@ -143,7 +143,7 @@ $e = static fn(string $v): string => htmlspecialchars($v, ENT_QUOTES, 'UTF-8');
                                     <script>
                                         document.write(new Date().getFullYear())
                                     </script>
-                                    WorkEddy
+                                    WorkEddy. All rights reserved.
                                 </div>
                                 <div class="d-none d-lg-inline-block">
                                     <a href="#" target="_blank" class="footer-link d-none d-sm-inline-block">Unlock ICT.</a>

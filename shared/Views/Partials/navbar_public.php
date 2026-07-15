@@ -11,7 +11,7 @@
             <ul class="navbar-nav mx-auto mb-3 mb-lg-0">
                 <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
                 <li class="nav-item"><a class="nav-link" href="/#faq">FAQ</a></li>
-                <li class="nav-item"><a class="nav-link" href="/#pricing">Pricing</a></li>
+                <li class="nav-item"><a class="nav-link" href="/plans">Plans</a></li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle<?= in_array(($page ?? ''), $aboutPages, true) ? ' active' : '' ?>" href="#" id="aboutDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         About Us

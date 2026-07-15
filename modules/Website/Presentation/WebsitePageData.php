@@ -70,28 +70,61 @@ final class WebsitePageData
         }
 
         return [
-            $this->fallbackPlan('free', 'Pilot', 0.00, 'USD', 'monthly', 'Best for early pilots and smaller teams', false, [
-                '10 completed assessments per month',
-                'Structured assessment methods (REBA, RULA, NIOSH)',
-                '1 active work site / location',
-                'Worker feedback & discomfort intake',
-                'Basic PDF/CSV report exports',
-            ], 'Best for early pilots and smaller teams', 10),
-            $this->fallbackPlan('professional', 'Professional', 299.00, 'USD', 'monthly', 'Best for growing safety and operations teams', true, [
-                '500 completed assessments per month',
-                'Unlimited team members & contributors',
-                'Corrective action assignment & workflow tracking',
-                'Before-and-after reassessment comparison',
-                'Full dashboard analytics & filtering',
-                'Prioritized intervention insights',
-            ], 'Best for growing safety and operations teams', 20),
-            $this->fallbackPlan('enterprise', 'Multi-site', 999.00, 'USD', 'monthly', 'Best for multi-site and large scale programs', false, [
-                'Custom assessment & scan volume options',
-                'Multi-site governance & consolidated views',
-                'Advanced administration, role permissions & audit logs',
-                'Customizable video data retention policies',
-                'Dedicated onboarding, training & procurement support',
-            ], 'Best for multi-site and large scale programs', 30),
+            $this->fallbackPlan(
+                'free',
+                'Pilot',
+                'For organizations evaluating WorkEddy with a limited number of authorized tasks and users.',
+                0.00,
+                'USD',
+                'monthly',
+                [
+                    'Guided pilot onboarding',
+                    'Structured ergonomic assessments',
+                    'Worker feedback intake',
+                    'Basic reporting exports',
+                ],
+                false,
+                'Request Pilot',
+                '/register',
+                10,
+            ),
+            $this->fallbackPlan(
+                'professional',
+                'Professional',
+                'For organizations managing ongoing ergonomic assessment and corrective-action workflows.',
+                299.00,
+                'USD',
+                'monthly',
+                [
+                    'Ongoing assessment workflows',
+                    'Corrective action tracking',
+                    'Before-and-after reassessment',
+                    'Dashboard reporting and filtering',
+                ],
+                true,
+                'Start Professional Trial',
+                '/register',
+                20,
+            ),
+            $this->fallbackPlan(
+                'enterprise',
+                'Multi-site',
+                'For organizations requiring additional worksites, governance controls, reporting, and implementation support.',
+                999.00,
+                'USD',
+                'monthly',
+                [
+                    'Additional worksites',
+                    'Governance and role controls',
+                    'Consolidated reporting',
+                    'Implementation support',
+                ],
+                false,
+                'Contact Sales',
+                '/contact-us',
+                30,
+                true,
+            ),
         ];
     }
 
@@ -102,70 +135,89 @@ final class WebsitePageData
     private function mapPlan(array $plan): array
     {
         $code = strtolower((string) ($plan['code'] ?? ''));
-        $name = (string) ($plan['name'] ?? 'Plan');
-        
-        // Override name for enterprise to match new nomenclature
-        if (str_contains($code, 'enterprise')) {
-            $name = 'Multi-site';
-        }
-
-        $badge = match (true) {
-            str_contains($code, 'free') || str_contains($code, 'starter') => 'Best for early pilots and smaller teams',
-            str_contains($code, 'pro') || str_contains($code, 'professional') => 'Best for growing safety and operations teams',
-            str_contains($code, 'enterprise') => 'Best for multi-site and large scale programs',
-            default => 'Ergonomics Plan',
-        };
-
-        $featureList = match (true) {
-            str_contains($code, 'free') || str_contains($code, 'starter') => [
-                '10 completed assessments per month',
-                'Structured assessment methods (REBA, RULA, NIOSH)',
-                '1 active work site / location',
-                'Worker feedback & discomfort intake',
-                'Basic PDF/CSV report exports',
-            ],
-            str_contains($code, 'pro') || str_contains($code, 'professional') => [
-                '500 completed assessments per month',
-                'Unlimited team members & contributors',
-                'Corrective action assignment & workflow tracking',
-                'Before-and-after reassessment comparison',
-                'Full dashboard analytics & filtering',
-                'Prioritized intervention insights',
-            ],
-            str_contains($code, 'enterprise') => [
-                'Custom assessment & scan volume options',
-                'Multi-site governance & consolidated views',
-                'Advanced administration, role permissions & audit logs',
-                'Customizable video data retention policies',
-                'Dedicated onboarding, training & procurement support',
-            ],
-            default => [
-                'Ergonomic Risk Assessments',
-                'REBA, RULA, and NIOSH methods',
-                'Business-grade reporting',
-            ],
-        };
-
-        $ctaLabel = match (true) {
-            str_contains($code, 'enterprise') => 'Contact Sales',
-            str_contains($code, 'pro') || str_contains($code, 'professional') => 'Start Professional Trial',
-            default => 'Start Pilot',
-        };
+        $features = is_array($plan['features'] ?? null) ? $plan['features'] : [];
+        $marketing = $this->marketingMetadataForPlan($code, $features);
 
         return [
-            'code' => $code !== '' ? $code : strtolower(str_replace(' ', '-', $name)),
-            'name' => $name,
+            'code' => $code !== '' ? $code : strtolower(str_replace(' ', '-', (string) ($plan['name'] ?? 'plan'))),
+            'name' => (string) ($plan['name'] ?? 'Plan'),
             'description' => $plan['description'] ?? null,
             'price' => (float) ($plan['price'] ?? 0.0),
             'currency' => (string) ($plan['currency'] ?? 'USD'),
             'billing_cycle' => (string) ($plan['billing_cycle'] ?? 'monthly'),
             'display_order' => isset($plan['display_order']) ? (int) $plan['display_order'] : null,
             'is_active' => (bool) ($plan['is_active'] ?? true),
-            'badge' => $badge,
-            'summary' => $badge,
-            'features' => $featureList,
-            'is_featured' => str_contains($code, 'pro') || str_contains($code, 'professional'),
-            'cta_label' => $ctaLabel,
+            'summary' => $marketing['summary'],
+            'features' => $marketing['highlights'],
+            'is_featured' => $marketing['featured'],
+            'cta_label' => $marketing['cta_label'],
+            'cta_href' => $marketing['cta_href'],
+            'is_custom_pricing' => $marketing['custom_pricing'],
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $features
+     * @return array{summary:string,highlights:list<string>,featured:bool,cta_label:string,cta_href:string,custom_pricing:bool}
+     */
+    private function marketingMetadataForPlan(string $code, array $features): array
+    {
+        $marketing = is_array($features['marketing'] ?? null) ? $features['marketing'] : [];
+
+        $defaultSummary = match (true) {
+            $code === 'free' => 'For organizations evaluating WorkEddy with a limited number of authorized tasks and users.',
+            $code === 'professional' => 'For organizations managing ongoing ergonomic assessment and corrective-action workflows.',
+            $code === 'enterprise' => 'For organizations requiring additional worksites, governance controls, reporting, and implementation support.',
+            default => 'WorkEddy plan',
+        };
+
+        $defaultHighlights = match (true) {
+            $code === 'free' => [
+                'Guided pilot onboarding',
+                'Structured ergonomic assessments',
+                'Worker feedback intake',
+                'Basic reporting exports',
+            ],
+            $code === 'professional' => [
+                'Ongoing assessment workflows',
+                'Corrective action tracking',
+                'Before-and-after reassessment',
+                'Dashboard reporting and filtering',
+            ],
+            $code === 'enterprise' => [
+                'Additional worksites',
+                'Governance and role controls',
+                'Consolidated reporting',
+                'Implementation support',
+            ],
+            default => [
+                'Ergonomic risk assessment workflows',
+                'Recognized assessment methods',
+                'Operational reporting',
+            ],
+        };
+
+        $defaultCtaLabel = match (true) {
+            $code === 'enterprise' => 'Contact Sales',
+            $code === 'professional' => 'Start Professional Trial',
+            default => 'Request Pilot',
+        };
+
+        $defaultCtaHref = $code === 'enterprise' ? '/contact-us' : '/register';
+
+        $summary = trim((string) ($marketing['summary'] ?? ''));
+        $highlights = array_values(array_filter(
+            array_map(static fn(mixed $item): string => trim((string) $item), is_array($marketing['highlights'] ?? null) ? $marketing['highlights'] : []),
+            static fn(string $item): bool => $item !== '',
+        ));
+
+        return [
+            'summary' => $summary !== '' ? $summary : $defaultSummary,
+            'highlights' => $highlights !== [] ? $highlights : $defaultHighlights,
+            'featured' => (bool) ($marketing['featured'] ?? false),
+            'cta_label' => trim((string) ($marketing['cta_label'] ?? '')) ?: $defaultCtaLabel,
+            'cta_href' => trim((string) ($marketing['cta_href'] ?? '')) ?: $defaultCtaHref,
+            'custom_pricing' => (bool) ($marketing['custom_pricing'] ?? ($code === 'enterprise')),
         ];
     }
 
@@ -203,35 +255,32 @@ final class WebsitePageData
     private function fallbackPlan(
         string $code,
         string $name,
+        string $description,
         float $price,
         string $currency,
         string $billingCycle,
-        string $badge,
-        bool $isFeatured,
         array $features,
-        string $summary = '',
+        bool $isFeatured,
+        string $ctaLabel,
+        string $ctaHref,
         ?int $displayOrder = null,
+        bool $isCustomPricing = false,
     ): array {
-        $ctaLabel = match (true) {
-            str_contains($code, 'enterprise') => 'Contact Sales',
-            str_contains($code, 'professional') => 'Start Professional Trial',
-            default => 'Start Pilot',
-        };
-
         return [
             'code' => $code,
             'name' => $name,
-            'description' => null,
+            'description' => $description,
             'price' => $price,
             'currency' => $currency,
             'billing_cycle' => $billingCycle,
             'display_order' => $displayOrder,
             'is_active' => true,
-            'badge' => $badge,
-            'summary' => $summary !== '' ? $summary : $badge,
+            'summary' => $description,
             'features' => $features,
             'is_featured' => $isFeatured,
             'cta_label' => $ctaLabel,
+            'cta_href' => $ctaHref,
+            'is_custom_pricing' => $isCustomPricing,
         ];
     }
 
@@ -254,9 +303,9 @@ final class WebsitePageData
         $code = strtolower((string) ($plan['code'] ?? ''));
 
         return match (true) {
-            str_contains($code, 'free') || str_contains($code, 'starter') => 10,
-            str_contains($code, 'pro') || str_contains($code, 'professional') => 20,
-            str_contains($code, 'enterprise') => 30,
+            $code === 'free' => 10,
+            $code === 'professional' => 20,
+            $code === 'enterprise' => 30,
             default => 1000 + (int) round((float) ($plan['price'] ?? 0.0)),
         };
     }
