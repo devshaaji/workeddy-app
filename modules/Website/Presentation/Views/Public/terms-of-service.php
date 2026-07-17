@@ -198,11 +198,11 @@
       </ol>
 
       <h2>23. Governing law</h2>
-      <p>These Terms are governed by the laws of the Federal Republic of Nigeria, without regard to conflict of law principles.</p>
+      <p>These Terms are governed by the laws of the State of Delaware, without regard to conflict of law principles. </p>
 
       <h2>24. Dispute resolution</h2>
       <p>Any dispute, claim, or controversy arising out of or relating to these Terms or the Services will first be addressed through good faith efforts to resolve the issue informally.</p>
-      <p>If the dispute cannot be resolved informally, it will be submitted to the competent courts in Nigeria, unless a separate written agreement provides for arbitration or another dispute resolution process.</p>
+      <p>If the dispute cannot be resolved informally, it will be submitted to the competent courts in Delaware, unless a separate written agreement provides for arbitration or another dispute resolution process.</p>
 
       <h2>25. Changes to these Terms</h2>
       <p>WorkEddy may update these Terms from time to time. If we make material changes, we will update the date at the top of this page and may provide additional notice where appropriate.</p>

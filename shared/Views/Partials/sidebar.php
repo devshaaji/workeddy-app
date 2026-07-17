@@ -286,7 +286,7 @@ $platformVisible = $platformSettings !== [] || $canAny([
                     <?php if ($can(ReportingPermissions::VIEW)): ?>
                         <li class="menu-item<?= $activeNav('reporting/pilot-summary') ? ' active' : '' ?>">
                             <a class="menu-link" href="/reporting/pilot-summary">
-                                Pilot Summary
+                                Summary
                             </a>
                         </li>
                         <li class="menu-item<?= $activeNav('reporting/impact-tracker') ? ' active' : '' ?>">

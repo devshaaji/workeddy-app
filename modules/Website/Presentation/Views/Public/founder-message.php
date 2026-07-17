@@ -40,7 +40,9 @@
 
           <p>WorkEddy's initial focus is on small and midsize U.S. employers that may not maintain a dedicated ergonomics team, supporting structured task assessment, corrective-action tracking, and follow-up reassessment within a single connected, documented workflow rather than scattered across spreadsheets, inspection notes, and email threads.</p>
 
-          <p>WorkEddy does not assume software alone prevents workplace injury. Effective prevention also depends on worker participation, sound task and equipment design, organizational commitment, qualified professional judgment, and the actual completion of corrective actions. What WorkEddy can do is make the connection between finding a risk and acting on it harder to lose track of.</p>
+          <p>WorkEddy does not assume software alone prevents workplace injury. Effective prevention also depends on worker participation, sound task and equipment design, organizational commitment, qualified professional judgment, and the actual completion of corrective actions. </p>
+          
+          <p>What WorkEddy can do is surface risk earlier, keep the link between finding it and fixing it from getting lost, and turn that record into a documented pattern of prevention, the kind of evidence that supports not only a single correction, but a growing, de-identified understanding of what actually reduces harm. </p>
 
           <p>Prevention should not wait until pain becomes routine. My goal is to make the path from identifying task-level risk to taking and documenting preventive action shorter, clearer, and easier to verify over time.</p>
           <h2> Founder preparation </h2>
@@ -51,9 +53,10 @@
 
           <div class="founder-signature-block">
             <!-- Dynamic signature fallback: hides image and displays cursive text if image fails to load -->
-            <p style="margin-bottom: 0px;"><span class="founder-sig-fallback">Treasure James,</span> <span class="fw-bold text-dark"> DrPHc, MS, MSISD, MOSH,</span> </p>
+            <p style="margin-bottom: 0px;"><span class="founder-sig-fallback">Treasure James,</span> <span class="fw-bold text-dark"> MS, MSISD, MOSH,</span> </p>
             <span class="text-muted small">Founder and Product Lead, WorkEddy</span>
-            <span class="text-muted small mb-4">Doctor of Public Health Student in Health Policy, Leadership and Management
+            <span class="text-muted small">Doctor of Public Health Student in Health Policy, Leadership and Management</span>
+            <span class="text-muted small mb-4">
               IRCA Certified ISO 45001 Lead Auditor
             </span>
             <span>Source:</span>

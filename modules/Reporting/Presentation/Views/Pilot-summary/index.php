@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 $v2Root = dirname(__DIR__, 5);
-$pageTitle = 'Pilot Summary';
+$pageTitle = 'Summary';
 $pagePurpose = 'Organization reporting';
 $breadcrumbs = [
     ['label' => 'Dashboard', 'url' => '/dashboard'],
     ['label' => 'Reports', 'url' => null],
-    ['label' => 'Pilot Summary', 'url' => null],
+    ['label' => 'Summary', 'url' => null],
 ];
 $filters = is_array($filters ?? null) ? $filters : [];
 $query = http_build_query(array_filter($filters, static fn($value): bool => $value !== ''));
@@ -65,7 +65,7 @@ $bodyRegionFallback = ['Neck', 'Shoulders', 'Upper Back', 'Lower Back', 'Elbows'
         <div class="card-body p-4">
             <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-4">
                 <div class="flex-grow-1">
-                    <span class="badge bg-label-primary mb-2">Pilot dashboard</span>
+                    <span class="badge bg-label-primary mb-2">Dashboard</span>
 
                     <p class="text-muted mb-4">Track implementation progress, discomfort trends, and reviewer agreement in one organization summary.</p>
 

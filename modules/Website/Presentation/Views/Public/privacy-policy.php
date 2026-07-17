@@ -167,9 +167,7 @@
       <p>Where third parties process personal data on our behalf, we expect them to use that data only for authorized purposes and to maintain appropriate confidentiality and security safeguards.</p>
 
       <h2>9. International transfers</h2>
-      <p>WorkEddy may store or process personal data in Nigeria or in other countries where we or our service providers operate.</p>
-      <p>Where personal data is transferred across national borders, we take steps designed to protect it through reasonable contractual, technical, and organizational safeguards. These measures may include vendor review, controlled access, data handling obligations, and security protections appropriate to the type of information involved.</p>
-
+      <p>WorkEddy	does	not	store	or	process	personal	data	outside	the	United	States.	All	personal	data,	including	task	footage,	posture	and	risk-assessment	data,	worker	feedback,	and	account	information,	is	stored	and	processed	on	servers	located	in	the	United	States.	Any	service	providers	we	engage	to	support	these	systems	are	contractually	required	to	store	and	process	data	solely	within	the	United	States.	</p>
       <h2>10. Data retention</h2>
       <p>We retain personal data only for as long as reasonably needed for the purposes described in this Privacy Policy, including to:</p>
       <ul>
@@ -237,8 +235,6 @@
       <p>If you have questions, requests, or concerns about this Privacy Policy or WorkEddy's handling of personal data, please contact us at:</p>
       <div class="p-4 contact-box mt-4">
         <p class="mb-1 fw-bold text-dark">WorkEddy</p>
-        <p class="mb-1 text-secondary">Elhagibbor Solutions Limited</p>
-        <p class="mb-3 text-secondary">Block L, House 3, G.R.A. Layout, Jos, NG 933105</p>
         <p class="mb-1"><strong>Email:</strong> <a href="mailto:privacy@workeddy.com" class="text-primary text-decoration-none">privacy@workeddy.com</a></p>
         <p class="mb-0"><strong>Support:</strong> <a href="mailto:support@workeddy.com" class="text-primary text-decoration-none">support@workeddy.com</a></p>
       </div>

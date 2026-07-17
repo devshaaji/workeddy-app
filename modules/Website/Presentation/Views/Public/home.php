@@ -11,7 +11,7 @@
 
         <div class="d-flex gap-3 flex-wrap mb-4">
           <a href="/register" class="btn btn-primary btn-lg">Request a Pilot </a>
-          <a href="#how-it-works" class="btn btn-outline-primary btn-lg">View Methods and Limitations</a>
+          <a href="#how-it-works" class="btn btn-outline-primary btn-lg">View Methods</a>
         </div>
 
         <div class="hero-marquee" aria-label="WorkEddy proof points">
@@ -87,8 +87,8 @@
     </div>
 
     <div class="p-4 border rounded bg-white mb-4">
-      <p class="mb-2 fw-medium text-dark">WorkEddy supports structured task assessment, corrective-action tracking, and follow-up reassessment more accessible to small and midsize employers that may not maintain a full-time ergonomics team.</p>
-      <p class="text-muted small mb-0">These statistics describe the broader workplace-injury context. They do not represent outcomes achieved by WorkEddy.</p>
+      <p class="mb-2 fw-medium text-dark">WorkEddy supports structured task assessment, corrective action tracking, and follow-up reassessment, making these capabilities more accessible to small and midsize employers that may not maintain a full-time ergonomics team. </p>
+      <p class="text-muted small mb-0">These statistics describe the broader workplace-injury context.</p>
     </div>
 
     <div class="text-muted mt-5 pt-3 border-top" style="font-size: 0.8rem; line-height: 1.5;">
@@ -195,7 +195,7 @@
 
 
     </div>
-    <p class="text-muted mt-4">WorkEddy supports workplace ergonomics review and prevention planning. It does not provide medical diagnosis, regulatory certification, or a guarantee of injury prevention or legal compliance.
+    <p class="text-muted mt-4">WorkEddy supports workplace ergonomics and prevention planning. It does not provide medical diagnosis or regulatory certification.
   </div>
 </section>
 
@@ -269,22 +269,6 @@
             <li class="d-flex align-items-start mb-3">
               <i class="bi bi-x-circle-fill text-danger me-2 mt-1"></i>
               <span>Replace an ergonomist, occupational-health professional, or qualified safety reviewer</span>
-            </li>
-            <li class="d-flex align-items-start mb-3">
-              <i class="bi bi-x-circle-fill text-danger me-2 mt-1"></i>
-              <span>Guarantee OSHA compliance</span>
-            </li>
-            <li class="d-flex align-items-start mb-3">
-              <i class="bi bi-x-circle-fill text-danger me-2 mt-1"></i>
-              <span>Guarantee that an injury will not occur</span>
-            </li>
-            <li class="d-flex align-items-start mb-3">
-              <i class="bi bi-x-circle-fill text-danger me-2 mt-1"></i>
-              <span>Automatically determine disciplinary or employment action</span>
-            </li>
-            <li class="d-flex align-items-start">
-              <i class="bi bi-x-circle-fill text-danger me-2 mt-1"></i>
-              <span>Reliably infer every load, force, frequency, or environmental condition from video alone</span>
             </li>
           </ul>
         </div>
@@ -407,7 +391,7 @@
         <h2 class="display-6 fw-bold text-dark mb-3">Want to discuss a pilot?</h2>
         <p class="fs-5 text-muted mb-0">Organizations may request a structured pilot to examine usability, assessment consistency, worker acceptability, corrective-action completion, and changes in assessed task-level risk. Pilot scope, responsibilities, privacy safeguards, and evaluation measures are defined before data collection begins.</p>
         <div class="mt-3">
-          <a href="/contact" class="btn btn-outline-primary">Contact-us</a>
+          <a href="/contact-us" class="btn btn-outline-primary">Contact us</a>
         </div>
       </div>
     </div>

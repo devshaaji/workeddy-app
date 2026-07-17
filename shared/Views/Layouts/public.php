@@ -72,7 +72,6 @@ $asset = static fn(string $path): string => htmlspecialchars($assetBase . '/' . 
                     <h6>Legal</h6>
                     <ul class="list-unstyled">
                         <li class="mb-2"><a href="/privacy-policy">Privacy Policy</a></li>
-                        <li class="mb-2"><a href="/worker-privacy">Worker Privacy</a></li>
                         <li class="mb-2"><a href="/terms-of-service">Terms of Service</a></li>
                     </ul>
                 </div>
