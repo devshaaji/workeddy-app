@@ -32,11 +32,7 @@ final class CorePageController
     {
         $vars = $request->routeParams;
         $ctx = $this->requireContext();
-        $greeting = $this->getDashboardGreeting();
-        $warmMessage = $this->getWorkEddyWarmMessage();
-        $userName = ucwords(strtolower($this->session->get('username') ?? 'User'));
-        $vars['greeting'] = "$greeting, $userName!";
-        $vars['warmMessage'] = $warmMessage;
+        $userName = ucwords(strtolower($this->session->get('username') ?? ''));
         $vars['pageTitle'] = 'Dashboard';
         $dashboardData = $this->reportingPageData->dashboardOverview($ctx, $this->dashboardFilters($request));
 
@@ -46,10 +42,7 @@ final class CorePageController
             array_replace(
                 ['routeParams' => $vars],
                 $dashboardData,
-                [
-                    'greeting' => $vars['greeting'],
-                    'warmMessage' => $vars['warmMessage'],
-                ],
+                ['username' => $userName]
             ),
             true,
             'app'
@@ -65,33 +58,6 @@ final class CorePageController
         }
 
         return $ctx;
-    }
-
-    private function getDashboardGreeting(): string
-    {
-        $hour = (int) date('H');
-
-        return match (true) {
-            $hour >= 5 && $hour < 12 => 'Good morning',
-            $hour >= 12 && $hour < 17 => 'Good afternoon',
-            $hour >= 17 && $hour < 21 => 'Good evening',
-            default    => 'Good night',
-        };
-    }
-
-
-
-
-    private function getWorkEddyWarmMessage(): string
-    {
-        $hour = (int) date('G');
-
-        return match (true) {
-            $hour >= 5  && $hour < 12 => 'Review pending assessments and corrective actions.',
-            $hour >= 12 && $hour < 17 => 'Check high-risk tasks and reviewer queue.',
-            $hour >= 17 && $hour < 21 => 'Review today\'s completed assessments and follow-ups.',
-            default                    => 'Plan tomorrow\'s ergonomic assessments.',
-        };
     }
 
     /** @return array<string, string> */

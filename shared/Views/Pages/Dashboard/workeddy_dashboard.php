@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 $pageTitle = 'Dashboard';
 $activePage = 'dashboard';
-$greeting = $greeting ?? 'Welcome back!';
+
 $warmMessage = $warmMessage ?? '';
-$pageScripts = [];
+$pageScripts = ['/js/dashboard.js'];
 
 $filters = is_array($filters ?? null) ? $filters : [];
 $summary = is_array($summary ?? null) ? $summary : [];
@@ -110,8 +110,8 @@ $topMetricCards = [
     <div class="d-flex align-items-start row">
         <div class="col-sm-7">
             <div class="card-body">
-                <h5 class="card-title text-primary mb-3 pe-5"><?= $e($greeting) ?></h5>
-                <p class="mb-6 text-muted"><?= $e($warmMessage) ?></p>
+                <h5 class="card-title text-primary mb-3 pe-5" id="greeting" data-username="<?= $e($username) ?>"></h5>
+                <p class="mb-6 text-muted" id="warmMessage"></p>
                 <a href="/reporting/pilot-summary" class="btn btn-sm btn-label-primary">View Pilot Summary</a>
             </div>
         </div>

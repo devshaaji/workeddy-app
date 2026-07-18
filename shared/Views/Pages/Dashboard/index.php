@@ -18,10 +18,8 @@ $warmMessage = $warmMessage ?? '';
     <!-- Page Header -->
     <div class="page-header">
         <div class="page-header-main">
-            <h1 class="page-title"><?= htmlspecialchars($greeting) ?></h1>
-            <?php if ($warmMessage): ?>
-                <p class="page-breadcrumb"><?= htmlspecialchars($warmMessage) ?></p>
-            <?php endif; ?>
+            <h1 class="page-title" id="greeting"></h1>
+            <p class="page-breadcrumb" id="warmMessage"></p>
         </div>
         <div class="page-header-actions">
             <a href="/tasks" class="btn btn-outline-primary">

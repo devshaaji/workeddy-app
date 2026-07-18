@@ -12,6 +12,14 @@
     var recentCount = document.getElementById('recentCount');
     var tasksList = document.getElementById('tasksList');
     var tasksEmpty = document.getElementById('tasksEmpty');
+    var greeting = document.getElementById('greeting');
+    var warmMessage = document.getElementById('warmMessage');
+
+    if(window.dashboardMessages) {
+        
+        if(greeting) greeting.textContent = dashboardMessages[0] + '!';
+        if(warmMessage) warmMessage.textContent = dashboardMessages[1];
+    }
 
     App.api.get(apiUrl).then(function (res) {
         if (loadingEl) loadingEl.classList.add('d-none');

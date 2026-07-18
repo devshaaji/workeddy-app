@@ -368,4 +368,30 @@
         window.we.timeAgo = timeAgo;
     });
 
+            function getDashboardMessages() {
+             const hour = new Date().getHours();
+
+            let greeting;
+            let warmMessage;
+
+            if (hour >= 5 && hour < 12) {
+                greeting = "Good morning";
+                warmMessage = "Review pending assessments and corrective actions.";
+            } else if (hour >= 12 && hour < 17) {
+                greeting = "Good afternoon";
+                warmMessage = "Check high-risk tasks and reviewer queue.";
+            } else if (hour >= 17 && hour < 21) {
+                greeting = "Good evening";
+                warmMessage = "Review today's completed assessments and follow-ups.";
+            } else {
+                greeting = "Good night";
+                warmMessage = "Plan tomorrow's ergonomic assessments.";
+            }
+
+            return [greeting, warmMessage];
+         }
+
+        window.dashboardMessages = getDashboardMessages();
+        
+
 })(window, document);
