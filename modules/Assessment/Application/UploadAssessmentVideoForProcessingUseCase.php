@@ -55,6 +55,7 @@ final class UploadAssessmentVideoForProcessingUseCase
             actorId: $actor->userId,
             allowedExtensions: ['mp4', 'mov', 'webm'],
             allowedMimeTypes: ['video/mp4', 'video/quicktime', 'video/webm'],
+            maxUploadBytes: $this->maxVideoSizeBytes(),
         ));
         if ($stored === null) {
             throw new ValidationException(['file' => 'Video file is required.']);

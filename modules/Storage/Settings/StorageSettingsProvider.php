@@ -50,10 +50,10 @@ final class StorageSettingsProvider implements IModuleSettingsProvider, \WorkEdd
                 key: 'max_upload_bytes',
                 module: 'storage',
                 type: SettingType::INTEGER,
-                default: 5242880,
+                default: 524288000,
                 label: 'Max Upload Size',
                 description: 'Maximum upload size in bytes.',
-                validation: fn($v) => (int) $v > 0 && (int) $v <= 52428800 ? true : 'Must be between 1 byte and 50 MB.',
+                validation: fn($v) => (int) $v > 0 && (int) $v <= 1073741824 ? true : 'Must be between 1 byte and 1 GB.',
             ),
             new SettingDefinition(
                 key: 'allowed_extensions',
