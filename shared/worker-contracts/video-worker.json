@@ -12,7 +12,7 @@
     },
     "complete": {
       "required": ["job_id", "assessment_uuid", "assessment_video_uuid", "organization_uuid", "metrics"],
-      "optional": ["pose_video_path", "thumbnail_path", "faces_blurred", "processing_confidence", "warnings", "timeline", "risky_windows", "processing_profile_hash", "video_sha256"]
+      "optional": ["pose_video_path", "thumbnail_path", "blurred_video_path", "faces_blurred", "processing_confidence", "warnings", "timeline", "risky_windows", "processing_profile_hash", "video_sha256"]
     },
     "fail": {
       "required": ["job_id", "assessment_uuid", "assessment_video_uuid", "organization_uuid"],

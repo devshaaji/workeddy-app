@@ -231,6 +231,8 @@ def process_scan_job(job: dict[str, Any]) -> None:
     pose_video_path = str(pose_metrics.get("pose_video_path", "")).strip()
     if pose_video_path.startswith("/storage/uploads/pose/") or pose_video_path.startswith("/storage/uploads/videos/"):
         payload["pose_video_path"] = pose_video_path
+        if face_blur_requested or pose_metrics.get("faces_blurred"):
+            payload["blurred_video_path"] = pose_video_path
     thumbnail_path = str(pose_metrics.get("thumbnail_path", "")).strip()
     if thumbnail_path.startswith("/storage/uploads/pose/") or thumbnail_path.startswith("/storage/uploads/videos/"):
         payload["thumbnail_path"] = thumbnail_path
