@@ -83,6 +83,8 @@ def _api_request(
             raw = response.read().decode("utf-8", errors="replace")
     except urllib.error.HTTPError as exc:
         error_body = exc.read().decode("utf-8", errors="replace") if hasattr(exc, "read") else ""
+        if "<html>" in error_body.lower():
+            error_body = f"HTML response from gateway (Status {exc.code})"
         raise RuntimeError(
             f"Worker API request failed with status {exc.code}: {error_body or str(exc)}"
         ) from exc

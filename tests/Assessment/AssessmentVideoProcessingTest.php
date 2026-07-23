@@ -53,7 +53,7 @@ final class AssessmentVideoProcessingTest extends TestCase
 
         $queue->claimed[] = new QueueJob(
             jobId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
-            queue: 'assessment_video_jobs',
+            queue: 'assessment_video_jobs.high',
             jobType: 'assessment_video.process',
             payload: $queue->dispatched[0]['payload'],
             status: 'processing',
@@ -278,7 +278,9 @@ final class RecordingAssessmentQueueService implements IQueueService
 
     public function claimAvailable(string $queue, string $workerId, int $limit, int $lockSeconds): array
     {
-        return $this->claimed;
+        $matching = array_values(array_filter($this->claimed, fn(QueueJob $j) => $j->queue === $queue));
+
+        return $matching !== [] ? $matching : $this->claimed;
     }
 
     public function complete(string $jobId, string $workerId): void { $this->completed[] = $jobId; }

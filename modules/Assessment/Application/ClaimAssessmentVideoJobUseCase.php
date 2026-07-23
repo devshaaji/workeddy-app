@@ -17,7 +17,23 @@ final class ClaimAssessmentVideoJobUseCase
     /** @return array<string, mixed>|null */
     public function execute(string $workerId, int $lockSeconds = 300): ?array
     {
-        $jobs = $this->queue->claimAvailable(EnqueueAssessmentVideoProcessingUseCase::QUEUE, $workerId, 1, $lockSeconds);
+        $queues = [
+            EnqueueAssessmentVideoProcessingUseCase::QUEUE . '.highest',
+            EnqueueAssessmentVideoProcessingUseCase::QUEUE . '.high',
+            EnqueueAssessmentVideoProcessingUseCase::QUEUE . '.normal',
+            EnqueueAssessmentVideoProcessingUseCase::QUEUE . '.low',
+            EnqueueAssessmentVideoProcessingUseCase::QUEUE . '.trial',
+            EnqueueAssessmentVideoProcessingUseCase::QUEUE,
+        ];
+
+        $jobs = [];
+        foreach ($queues as $queue) {
+            $jobs = $this->queue->claimAvailable($queue, $workerId, 1, $lockSeconds);
+            if ($jobs !== []) {
+                break;
+            }
+        }
+
         if ($jobs === []) {
             return null;
         }
