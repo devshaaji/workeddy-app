@@ -24,15 +24,18 @@ ensure_runtime_dirs() {
     /var/www/html/storage/log \
     /var/www/html/storage/app/private \
     /var/www/html/var/locks \
+    /storage \
     /var/log
 
   chmod -R 0775 \
     /var/www/html/storage \
-    /var/www/html/var || true
+    /var/www/html/var \
+    /storage || true
 
   chown -R www-data:www-data \
     /var/www/html/storage \
-    /var/www/html/var 2>/dev/null || true
+    /var/www/html/var \
+    /storage 2>/dev/null || true
 }
 
 track_pid() {
