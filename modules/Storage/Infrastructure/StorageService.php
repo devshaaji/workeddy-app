@@ -258,7 +258,15 @@ final class StorageService implements IStorageService
             return $this->filesystem;
         }
 
-        $root = APP_ROOT . '/' . trim($this->settings->localPrivateRoot(), '/\\');
+        $configured = getenv('STORAGE_PRIVATE_ROOT') ?: getenv('WorkEddy_VIDEO_WORKER_STORAGE_ROOT') ?: $this->settings->localPrivateRoot();
+        $configured = trim((string) $configured);
+
+        if (str_starts_with($configured, '/') || preg_match('/^[A-Za-z]:[\/\\\\]/', $configured) === 1) {
+            $root = $configured;
+        } else {
+            $root = APP_ROOT . '/' . trim($configured, '/\\');
+        }
+
         if (!is_dir($root) && !mkdir($root, 0775, true) && !is_dir($root)) {
             throw new \RuntimeException('Unable to create storage root.');
         }
