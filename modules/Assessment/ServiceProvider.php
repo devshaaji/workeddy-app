@@ -195,6 +195,7 @@ final class ServiceProvider implements ModuleServiceProviderInterface
                 $c->get(IAuditService::class),
                 $c->get(AssessmentVideoProcessingProfileResolver::class),
                 $c->get(SubscriptionAssessmentVideoProcessingProfileResolver::class),
+                $c->get(AssessmentEngine::class),
             ),
             ClaimAssessmentVideoJobUseCase::class => static fn(ContainerInterface $c): ClaimAssessmentVideoJobUseCase => new ClaimAssessmentVideoJobUseCase(
                 $c->get(IAssessmentRepository::class),

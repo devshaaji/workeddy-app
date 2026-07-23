@@ -28,6 +28,7 @@ final class EnqueueAssessmentVideoProcessingUseCase
         private readonly IAuditService $audit,
         private readonly AssessmentVideoProcessingProfileResolver $profiles = new AssessmentVideoProcessingProfileResolver(),
         private readonly ?SubscriptionAssessmentVideoProcessingProfileResolver $subscriptionProfiles = null,
+        private readonly ?\WorkEddy\Modules\Ergonomics\Domain\Services\AssessmentEngine $engine = null,
     ) {}
 
     /** @return array<string, mixed> */
@@ -54,6 +55,45 @@ final class EnqueueAssessmentVideoProcessingUseCase
                     isset($reusable['blurredVideoStorageFileUuid']) ? (string) $reusable['blurredVideoStorageFileUuid'] : null,
                 );
                 $this->assessments->updateVideoProcessing($reused);
+
+                $metrics = is_array($reusable['metrics'] ?? null) ? $reusable['metrics'] : [];
+                $engine = $this->engine ?? new \WorkEddy\Modules\Ergonomics\Domain\Services\AssessmentEngine();
+                if ($metrics !== []) {
+                    $score = $engine->assess($assessment->getModel(), $metrics);
+                    $updated = $assessment->withAiEstimatedScore($metrics, $score)->replaceVideo($reused);
+                    $this->assessments->update($updated);
+
+                    $this->assessments->saveAiScoreOutput(new \WorkEddy\Modules\Assessment\Domain\AiScoreOutput(
+                        id: null,
+                        uuid: UuidSupport::generate(),
+                        assessmentUuid: $assessment->getUuid(),
+                        assessmentVideoUuid: $reused->getUuid(),
+                        scoreModel: $assessment->getModel(),
+                        scoreSource: 'ai_estimated',
+                        modelVersion: (string) ($metrics['model_version'] ?? 'reused'),
+                        confidence: isset($reusable['processingConfidence']) ? (float) $reusable['processingConfidence'] : null,
+                        metrics: $metrics,
+                        score: $score,
+                        timeline: is_array($reusable['timeline'] ?? null) ? $reusable['timeline'] : [],
+                        flags: [
+                            'low_confidence' => false,
+                            'faces_blurred' => true,
+                            'has_risky_windows' => !empty($reusable['riskyWindows']),
+                        ],
+                        metadata: [
+                            'reused' => true,
+                            'processing_profile_hash' => $profileHash,
+                            'video_sha256' => $videoSha256,
+                            'pose_video_storage_file_uuid' => $reusable['poseVideoStorageFileUuid'] ?? null,
+                            'thumbnail_storage_file_uuid' => $reusable['thumbnailStorageFileUuid'] ?? null,
+                            'blurred_video_storage_file_uuid' => $reusable['blurredVideoStorageFileUuid'] ?? null,
+                            'risky_windows' => $reusable['riskyWindows'] ?? [],
+                        ],
+                        createdByWorker: 'reused_cache',
+                        createdAt: null,
+                    ));
+                }
+
                 $this->audit->record('assessment.video.processing_reused', 'assessment_video', $reused->getUuid(), afterState: $reused->toView(), actorId: (string) $actor->userId, actorType: 'user');
 
                 return $reused->toView();
