@@ -285,8 +285,23 @@
         });
     }
 
-    function firstAllowedAsset(assets) {
-        return (assets || []).find(function (asset) {
+    function defaultAsset(assets) {
+        if (!assets || !assets.length) {
+            return null;
+        }
+        var blurred = assets.find(function (asset) {
+            return asset.assetType === 'blurred_video' && (!asset.actions || asset.actions.canView !== false);
+        });
+        if (blurred) {
+            return blurred;
+        }
+        var pose = assets.find(function (asset) {
+            return asset.assetType === 'pose_video' && (!asset.actions || asset.actions.canView !== false);
+        });
+        if (pose) {
+            return pose;
+        }
+        return assets.find(function (asset) {
             return !asset.actions || asset.actions.canView !== false;
         }) || null;
     }
@@ -305,7 +320,7 @@
             renderPreview();
             renderMetadata();
 
-            var initialAsset = firstAllowedAsset(state.assessment.videoAssets || []);
+            var initialAsset = defaultAsset(state.assessment.videoAssets || []);
             if (initialAsset) {
                 selectAsset(initialAsset);
             } else {

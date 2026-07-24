@@ -502,7 +502,7 @@ final class AssessmentModuleTest extends TestCase
         self::assertSame('completed', $view['statusRail']['processingStatus']);
         self::assertSame('blurred', $view['statusRail']['blurStatus']);
         self::assertArrayHasKey('videoAssets', $view);
-        self::assertSame(['original_video', 'blurred_video', 'thumbnail', 'pose_video'], array_column($view['videoAssets'], 'assetType'));
+        self::assertSame(['blurred_video', 'pose_video', 'thumbnail', 'original_video'], array_column($view['videoAssets'], 'assetType'));
         self::assertTrue($view['videoAssets'][0]['actions']['canRequestSignedAccess']);
         self::assertTrue($view['videoAssets'][0]['actions']['canViewOriginal']);
         self::assertTrue($view['videoAssets'][1]['actions']['canViewBlurred']);

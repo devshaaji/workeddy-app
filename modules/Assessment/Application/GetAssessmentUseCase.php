@@ -124,19 +124,22 @@ final class GetAssessmentUseCase
                 ],
             ];
 
-            $assets[] = $base + [
-                'assetType' => 'original_video',
-                'kind' => 'video',
-                'storageFileUuid' => (string) ($video['storageFileUuid'] ?? ''),
-                'sourceVideoUuid' => (string) ($video['uuid'] ?? ''),
-            ];
-
             if (trim((string) ($video['blurredStorageFileUuid'] ?? '')) !== '') {
                 $assets[] = $base + [
                     'assetType' => 'blurred_video',
                     'label' => 'Blurred video',
                     'kind' => 'video',
                     'storageFileUuid' => (string) $video['blurredStorageFileUuid'],
+                    'sourceVideoUuid' => (string) ($video['uuid'] ?? ''),
+                ];
+            }
+
+            if (trim((string) ($video['poseVideoStorageFileUuid'] ?? '')) !== '') {
+                $assets[] = $base + [
+                    'assetType' => 'pose_video',
+                    'label' => 'Pose overlay video',
+                    'kind' => 'video',
+                    'storageFileUuid' => (string) $video['poseVideoStorageFileUuid'],
                     'sourceVideoUuid' => (string) ($video['uuid'] ?? ''),
                 ];
             }
@@ -151,15 +154,13 @@ final class GetAssessmentUseCase
                 ];
             }
 
-            if (trim((string) ($video['poseVideoStorageFileUuid'] ?? '')) !== '') {
-                $assets[] = $base + [
-                    'assetType' => 'pose_video',
-                    'label' => 'Pose overlay video',
-                    'kind' => 'video',
-                    'storageFileUuid' => (string) $video['poseVideoStorageFileUuid'],
-                    'sourceVideoUuid' => (string) ($video['uuid'] ?? ''),
-                ];
-            }
+            $assets[] = $base + [
+                'assetType' => 'original_video',
+                'label' => 'Original video (Raw source)',
+                'kind' => 'video',
+                'storageFileUuid' => (string) ($video['storageFileUuid'] ?? ''),
+                'sourceVideoUuid' => (string) ($video['uuid'] ?? ''),
+            ];
         }
 
         return $assets;

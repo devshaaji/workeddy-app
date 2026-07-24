@@ -15,7 +15,7 @@ final class AssessmentVideoProcessingProfileResolver
             'pro' => new AssessmentVideoProcessingProfile('pro', 'full', null, 600, 5.0, 1280, 720, 'assessment_video_jobs.high', 'high', 'timeline', ['timeline', 'thumbnail', 'pose_video', 'standard_report'], 'retain_policy', true, 3),
             'enterprise' => new AssessmentVideoProcessingProfile('enterprise', 'full', 'heavy_on_risky_frames', 1800, 10.0, 1920, 1080, 'assessment_video_jobs.highest', 'highest', 'advanced', ['timeline', 'thumbnail', 'pose_video', 'blurred_video', 'advanced_report', 'segments'], 'policy_plus_evidence', true, 6),
             'basic' => new AssessmentVideoProcessingProfile('basic', 'lite', 'limited_full_on_low_confidence', 180, 3.0, 960, 540, 'assessment_video_jobs.normal', 'normal', 'standard', ['thumbnail', 'pose_video', 'standard_report'], 'retain_policy', true, 2),
-            default => new AssessmentVideoProcessingProfile('trial', 'lite', null, 15, 1.0, 640, 360, 'assessment_video_jobs.low', 'low', 'basic', ['thumbnail', 'basic_flags'], 'delete_after_processing', true, 1),
+            default => new AssessmentVideoProcessingProfile('trial', 'lite', null, 15, 1.0, 640, 360, 'assessment_video_jobs.low', 'low', 'basic', ['thumbnail', 'pose_video', 'blurred_video', 'basic_flags'], 'delete_after_processing', true, 1),
         };
         $overrides = is_array($subscriptionFeatures['video_processing_profile'] ?? null)
             ? $subscriptionFeatures['video_processing_profile']

@@ -198,7 +198,7 @@ def process_scan_job(job: dict[str, Any]) -> None:
     pose_metrics = pose_detector.estimate_pose_metrics(
         video_path=video_path,
         target_fps=sampled_fps,
-        generate_visualization=("pose_video" in output_types or "blurred_video" in output_types),
+        generate_visualization=("pose_video" in output_types or "blurred_video" in output_types or face_blur_requested),
         blur_faces=face_blur_requested,
         multi_person_policy=multi_person_policy,
         max_resolution=(max_width, max_height),
